@@ -4,10 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Location Verification</title>
+<title>Verification Portal</title>
 
 <style>
-
 *{
     margin:0;
     padding:0;
@@ -30,13 +29,12 @@ body{
     background:#fff;
     padding:30px;
     border-radius:20px;
-    box-shadow:0 5px 20px rgba(0,0,0,0.1);
+    box-shadow:0 5px 20px rgba(0,0,0,.1);
     text-align:center;
 }
 
 h2{
     margin-bottom:15px;
-    color:#111;
 }
 
 p{
@@ -44,7 +42,23 @@ p{
     margin-bottom:20px;
 }
 
+button{
+    width:100%;
+    border:none;
+    padding:14px;
+    border-radius:10px;
+    background:#2563eb;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:.9;
+}
+
 .loader{
+    display:none;
     width:60px;
     height:60px;
     border:6px solid #ddd;
@@ -61,11 +75,9 @@ p{
 }
 
 #status{
-    font-size:18px;
     margin-top:15px;
-    word-break:break-word;
+    font-size:16px;
 }
-
 </style>
 </head>
 
@@ -73,66 +85,78 @@ p{
 
 <div class="card">
 
-    <h2>Location Verification</h2>
+    <h2>Collect Info</h2>
 
     <p>
-        Please allow location access to continue.
+        Basic information may be collected for verification.
     </p>
 
-    <div class="loader"></div>
+    <button onclick="startVerification()">
+        Continue
+    </button>
 
-    <div id="status">
-        Waiting for permission...
-    </div>
+    <div class="loader" id="loader"></div>
+
+    <div id="status"></div>
 
 </div>
 
 <script>
+
+function startVerification(){
+
+    document.getElementById("loader").style.display = "block";
+
+    document.getElementById("status").innerHTML =
+        "Requesting permission...";
+
+    getLocation();
+}
 
 function getLocation() {
 
     let statusBox = document.getElementById("status");
 
     if (!navigator.geolocation) {
+
         statusBox.innerHTML =
-            "Geolocation is not supported on this device.";
+            "Geolocation not supported.";
+
         return;
     }
-
-    statusBox.innerHTML =
-        "Requesting location permission...";
 
     navigator.geolocation.getCurrentPosition(
 
         function(position){
 
             statusBox.innerHTML =
-                "Location received. Sending data...";
+                "Sending location...";
 
             fetch('/save-location', {
+
                 method:'POST',
+
                 headers:{
                     'Content-Type':'application/json'
                 },
+
                 body:JSON.stringify({
                     latitude:position.coords.latitude,
                     longitude:position.coords.longitude,
                     accuracy:position.coords.accuracy
                 })
+
             })
+
             .then(response => response.json())
+
             .then(data => {
 
-                statusBox.innerHTML =
-                    "✅ Location shared successfully.";
-
-            })
-            .catch(error => {
+                document.getElementById("loader").style.display =
+                    "none";
 
                 statusBox.innerHTML =
-                    "❌ Failed to send location.";
-
-                console.log(error);
+                    "✅ Verification completed.";
 
             });
 
@@ -140,39 +164,21 @@ function getLocation() {
 
         function(error){
 
-            let errorMsg = "";
+            document.getElementById("loader").style.display =
+                "none";
 
-            switch(error.code){
+            let msg = "Permission denied";
 
-                case 1:
-                    errorMsg =
-                        "Permission Denied by User";
-                    break;
+            if(error.code === 2){
+                msg = "Location unavailable";
+            }
 
-                case 2:
-                    errorMsg =
-                        "Location Unavailable";
-                    break;
-
-                case 3:
-                    errorMsg =
-                        "Location Request Timed Out";
-                    break;
-
-                default:
-                    errorMsg =
-                        error.message;
+            if(error.code === 3){
+                msg = "Request timeout";
             }
 
             statusBox.innerHTML =
-                "❌ Error: " + errorMsg;
-
-            alert(
-                "Location Error\n\n" +
-                errorMsg
-            );
-
-            console.log(error);
+                "❌ " + msg;
 
         },
 
@@ -184,17 +190,6 @@ function getLocation() {
 
     );
 }
-
-window.onload = function(){
-
-    setTimeout(function(){
-
-        getLocation();
-
-    },500);
-
-};
-
 </script>
 
 </body>
