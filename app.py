@@ -8,6 +8,12 @@ from sqlalchemy.orm import sessionmaker
 import csv
 import io
 from functools import wraps
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+import tempfile
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here-change-this-in-production")
@@ -37,7 +43,7 @@ else:
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     print(f"✅ Using PostgreSQL database")
 
-print(f"📊 Database: {DATABASE_URL[:50]}...")  # Show first 50 chars only
+print(f"📊 Database: {DATABASE_URL[:50]}...")
 
 # Database Setup
 engine = create_engine(DATABASE_URL, echo=False)
@@ -138,7 +144,7 @@ def view_locations():
 
 @app.route('/api/locations')
 def api_locations():
-    """API endpoint for fetching locations with search"""
+    """API endpoint for fetching locations with search by ID or Timestamp"""
     try:
         search = request.args.get('search', '').strip()
         limit = request.args.get('limit', 100, type=int)
@@ -147,15 +153,17 @@ def api_locations():
         session = Session()
         query = session.query(Location)
         
-        # Search functionality
         if search:
-            locations = query.filter(
-                Location.timestamp.cast(Text).contains(search)
-            ).order_by(Location.timestamp.desc()).offset(offset).limit(limit).all()
-            
-            total = query.filter(
-                Location.timestamp.cast(Text).contains(search)
-            ).count()
+            if search.isdigit():
+                locations = query.filter(Location.id == int(search)).order_by(Location.timestamp.desc()).offset(offset).limit(limit).all()
+                total = query.filter(Location.id == int(search)).count()
+            else:
+                locations = query.filter(
+                    Location.timestamp.cast(Text).contains(search)
+                ).order_by(Location.timestamp.desc()).offset(offset).limit(limit).all()
+                total = query.filter(
+                    Location.timestamp.cast(Text).contains(search)
+                ).count()
         else:
             locations = query.order_by(Location.timestamp.desc()).offset(offset).limit(limit).all()
             total = query.count()
@@ -182,22 +190,22 @@ def export_csv():
         query = session.query(Location)
         
         if search:
-            locations = query.filter(
-                Location.timestamp.cast(Text).contains(search)
-            ).order_by(Location.timestamp.desc()).all()
+            if search.isdigit():
+                locations = query.filter(Location.id == int(search)).order_by(Location.timestamp.desc()).all()
+            else:
+                locations = query.filter(
+                    Location.timestamp.cast(Text).contains(search)
+                ).order_by(Location.timestamp.desc()).all()
         else:
             locations = query.order_by(Location.timestamp.desc()).all()
         
         session.close()
         
-        # Create CSV in memory
         output = io.StringIO()
         writer = csv.writer(output)
         
-        # Write headers
         writer.writerow(['ID', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Google Maps Link'])
         
-        # Write data
         for loc in locations:
             maps_link = f"https://maps.google.com/?q={loc.latitude},{loc.longitude}"
             writer.writerow([
@@ -220,6 +228,106 @@ def export_csv():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/export-pdf')
+@login_required
+def export_pdf():
+    """Export locations to PDF"""
+    try:
+        search = request.args.get('search', '').strip()
+        
+        session = Session()
+        query = session.query(Location)
+        
+        if search:
+            if search.isdigit():
+                locations = query.filter(Location.id == int(search)).order_by(Location.timestamp.desc()).all()
+            else:
+                locations = query.filter(
+                    Location.timestamp.cast(Text).contains(search)
+                ).order_by(Location.timestamp.desc()).all()
+        else:
+            locations = query.order_by(Location.timestamp.desc()).all()
+        
+        session.close()
+        
+        buffer = io.BytesIO()
+        
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), 
+                                rightMargin=30, leftMargin=30, 
+                                topMargin=50, bottomMargin=30)
+        
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=16,
+            textColor=colors.HexColor('#1e3a8a'),
+            alignment=1,
+            spaceAfter=20
+        )
+        
+        elements = []
+        title = Paragraph("📍 Cyber Crime Investigation Portal", title_style)
+        elements.append(title)
+        
+        subtitle = Paragraph(f"Location Records Report - Total: {len(locations)} records", styles['Heading2'])
+        elements.append(subtitle)
+        elements.append(Spacer(1, 20))
+        
+        current_time = datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S")
+        time_info = Paragraph(f"Generated on: {current_time} IST", styles['Normal'])
+        elements.append(time_info)
+        elements.append(Spacer(1, 20))
+        
+        data = []
+        data.append(['S.No', 'ID', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Google Maps Link'])
+        
+        for idx, loc in enumerate(locations, 1):
+            maps_link = f"https://maps.google.com/?q={loc.latitude},{loc.longitude}"
+            data.append([
+                str(idx),
+                str(loc.id),
+                str(loc.latitude),
+                str(loc.longitude),
+                str(loc.accuracy if loc.accuracy else 'N/A'),
+                loc.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+                maps_link
+            ])
+        
+        table = Table(data, repeatRows=1)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#ffffff')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#ffffff'), colors.HexColor('#f5f5f5')]),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#333333')),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        
+        elements.append(table)
+        doc.build(elements)
+        buffer.seek(0)
+        
+        return Response(
+            buffer.getvalue(),
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment;filename=location_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'}
+        )
+        
+    except Exception as e:
+        print(f"❌ PDF export error: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/stats')
 def api_stats():
     """Get statistics about records"""
@@ -235,7 +343,6 @@ def api_stats():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ============ DELETE API (NEW FEATURE) ============
 @app.route('/api/delete-location/<int:id>', methods=['DELETE'])
 @login_required
 def delete_location(id):
@@ -251,11 +358,9 @@ def delete_location(id):
                 "message": f"Record with ID {id} not found"
             }), 404
         
-        # Delete the record
         session.delete(location)
         session.commit()
         
-        # Get updated total count
         total = session.query(Location).count()
         session.close()
         
