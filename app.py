@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify, Response, session, redirect, url_for
 from datetime import datetime
 import os
 import pytz
@@ -7,10 +7,24 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import csv
 import io
+from functools import wraps
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here-change-this-in-production")
 
-# DATABASE_URL environment variable se le (Render pe automatically set hoga)
+# Admin password - Environment variable se le, nahi toh default "admin123"
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Anurag512@")
+
+# Login required decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# DATABASE_URL environment variable se le
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Local development ke liye - Agar DATABASE_URL nahi hai toh SQLite use karo
@@ -101,7 +115,24 @@ def save_location():
             "message": str(e)
         }), 500
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == ADMIN_PASSWORD:
+            session['logged_in'] = True
+            return redirect(url_for('view_locations'))
+        else:
+            return render_template('login.html', error="Invalid password!")
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
+
 @app.route('/view')
+@login_required
 def view_locations():
     return render_template('dashboard.html')
 
