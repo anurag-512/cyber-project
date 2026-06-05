@@ -12,7 +12,7 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here-change-this-in-production")
 
-# Admin password - Environment variable se le, nahi toh default "admin123"
+# Admin password - Environment variable se le, nahi toh default "Anurag512@"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Anurag512@")
 
 # Login required decorator
@@ -234,6 +234,45 @@ def api_stats():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ============ DELETE API (NEW FEATURE) ============
+@app.route('/api/delete-location/<int:id>', methods=['DELETE'])
+@login_required
+def delete_location(id):
+    """Delete a location record by ID"""
+    try:
+        session = Session()
+        location = session.query(Location).filter_by(id=id).first()
+        
+        if not location:
+            session.close()
+            return jsonify({
+                "status": "error", 
+                "message": f"Record with ID {id} not found"
+            }), 404
+        
+        # Delete the record
+        session.delete(location)
+        session.commit()
+        
+        # Get updated total count
+        total = session.query(Location).count()
+        session.close()
+        
+        print(f"✅ Deleted location ID: {id}")
+        
+        return jsonify({
+            "status": "success",
+            "message": f"Record {id} deleted successfully",
+            "total_records": total
+        })
+        
+    except Exception as e:
+        print(f"❌ Delete error: {e}")
+        return jsonify({
+            "status": "error", 
+            "message": str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
