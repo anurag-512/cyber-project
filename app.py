@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, Response, session, r
 from datetime import datetime
 import os
 import pytz
-from sqlalchemy import create_engine, Column, Integer, Float, DateTime, Text
+from sqlalchemy import create_engine, Column, Integer, Float, DateTime, Text, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import csv
@@ -12,16 +12,13 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-import tempfile
+import base64
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here-change-this-in-production")
 
-# Admin password - Environment variable se le, nahi toh default "Anurag512@"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Anurag512@")
 
-# Login required decorator
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -30,26 +27,22 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# DATABASE_URL environment variable se le
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Local development ke liye - Agar DATABASE_URL nahi hai toh SQLite use karo
 if not DATABASE_URL:
     print("⚠️ DATABASE_URL not found! Using SQLite for local development...")
     DATABASE_URL = "sqlite:///locations.db"
 else:
-    # PostgreSQL ke liye SSL fix (Render ke liye)
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     print(f"✅ Using PostgreSQL database")
 
 print(f"📊 Database: {DATABASE_URL[:50]}...")
 
-# Database Setup
 engine = create_engine(DATABASE_URL, echo=False)
 Base = declarative_base()
 
-# Table Schema
+# Table Schema with photo column
 class Location(Base):
     __tablename__ = 'locations'
     
@@ -58,6 +51,8 @@ class Location(Base):
     longitude = Column(Float, nullable=False)
     accuracy = Column(Float, nullable=True)
     timestamp = Column(DateTime, nullable=False)
+    photo = Column(Text, nullable=True)  # Base64 encoded photo
+    photo_filename = Column(String(255), nullable=True)
     
     def to_dict(self):
         return {
@@ -65,17 +60,14 @@ class Location(Base):
             'latitude': self.latitude,
             'longitude': self.longitude,
             'accuracy': self.accuracy,
-            'timestamp': self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            'timestamp': self.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+            'has_photo': self.photo is not None
         }
 
-# Create table
 Base.metadata.create_all(engine)
 print("✅ Database tables ready")
 
-# Session factory
 Session = sessionmaker(bind=engine)
-
-# IST Timezone
 IST = pytz.timezone('Asia/Kolkata')
 
 @app.route('/')
@@ -87,39 +79,34 @@ def save_location():
     try:
         data = request.get_json()
         
-        # Get current time in IST
         ist_now = datetime.now(IST)
         
-        # Create new record
         new_location = Location(
             latitude=data.get("latitude"),
             longitude=data.get("longitude"),
             accuracy=data.get("accuracy"),
-            timestamp=ist_now
+            timestamp=ist_now,
+            photo=data.get("photo"),
+            photo_filename=data.get("photo_filename")
         )
         
-        # Save to database
         session = Session()
         session.add(new_location)
         session.commit()
-        
         record_count = session.query(Location).count()
         session.close()
         
-        print(f"✅ Location saved: {data.get('latitude')}, {data.get('longitude')} at {ist_now}")
+        print(f"✅ Location + Photo saved: {data.get('latitude')}, {data.get('longitude')}")
         
         return jsonify({
             "status": "success",
-            "message": "Location saved successfully",
+            "message": "Location and photo saved successfully",
             "total_records": record_count
         })
         
     except Exception as e:
         print(f"❌ Error: {e}")
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -142,9 +129,23 @@ def logout():
 def view_locations():
     return render_template('dashboard.html')
 
+@app.route('/api/photo/<int:id>')
+@login_required
+def get_photo(id):
+    try:
+        session = Session()
+        location = session.query(Location).filter_by(id=id).first()
+        session.close()
+        
+        if location and location.photo:
+            return Response(base64.b64decode(location.photo), mimetype='image/jpeg')
+        else:
+            return jsonify({'error': 'No photo found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/locations')
 def api_locations():
-    """API endpoint for fetching locations with search by ID or Timestamp"""
     try:
         search = request.args.get('search', '').strip()
         limit = request.args.get('limit', 100, type=int)
@@ -182,7 +183,6 @@ def api_locations():
 
 @app.route('/api/export-csv')
 def export_csv():
-    """Export all locations to CSV"""
     try:
         search = request.args.get('search', '').strip()
         
@@ -204,7 +204,7 @@ def export_csv():
         output = io.StringIO()
         writer = csv.writer(output)
         
-        writer.writerow(['ID', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Google Maps Link'])
+        writer.writerow(['ID', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Has Photo', 'Google Maps Link'])
         
         for loc in locations:
             maps_link = f"https://maps.google.com/?q={loc.latitude},{loc.longitude}"
@@ -214,6 +214,7 @@ def export_csv():
                 loc.longitude,
                 loc.accuracy if loc.accuracy else 'N/A',
                 loc.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+                'Yes' if loc.photo else 'No',
                 maps_link
             ])
         
@@ -231,7 +232,6 @@ def export_csv():
 @app.route('/api/export-pdf')
 @login_required
 def export_pdf():
-    """Export locations to PDF"""
     try:
         search = request.args.get('search', '').strip()
         
@@ -251,133 +251,82 @@ def export_pdf():
         session.close()
         
         buffer = io.BytesIO()
-        
-        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), 
-                                rightMargin=30, leftMargin=30, 
-                                topMargin=50, bottomMargin=30)
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=30, leftMargin=30, topMargin=50, bottomMargin=30)
         
         styles = getSampleStyleSheet()
-        title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
-            fontSize=16,
-            textColor=colors.HexColor('#1e3a8a'),
-            alignment=1,
-            spaceAfter=20
-        )
+        title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'], fontSize=16,
+                                      textColor=colors.HexColor('#1e3a8a'), alignment=1, spaceAfter=20)
         
         elements = []
-        title = Paragraph("📍 Cyber Crime Investigation Portal", title_style)
-        elements.append(title)
-        
-        subtitle = Paragraph(f"Location Records Report - Total: {len(locations)} records", styles['Heading2'])
-        elements.append(subtitle)
+        elements.append(Paragraph("📍 Cyber Crime Investigation Portal", title_style))
+        elements.append(Paragraph(f"Location Records Report - Total: {len(locations)} records", styles['Heading2']))
         elements.append(Spacer(1, 20))
         
         current_time = datetime.now(IST).strftime("%Y-%m-%d %H:%M:%S")
-        time_info = Paragraph(f"Generated on: {current_time} IST", styles['Normal'])
-        elements.append(time_info)
+        elements.append(Paragraph(f"Generated on: {current_time} IST", styles['Normal']))
         elements.append(Spacer(1, 20))
         
-        data = []
-        data.append(['S.No', 'ID', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Google Maps Link'])
+        data = [['S.No', 'ID', 'Latitude', 'Longitude', 'Accuracy', 'Timestamp', 'Photo', 'Google Maps']]
         
         for idx, loc in enumerate(locations, 1):
-            maps_link = f"https://maps.google.com/?q={loc.latitude},{loc.longitude}"
             data.append([
-                str(idx),
-                str(loc.id),
-                str(loc.latitude),
-                str(loc.longitude),
+                str(idx), str(loc.id), str(loc.latitude), str(loc.longitude),
                 str(loc.accuracy if loc.accuracy else 'N/A'),
                 loc.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-                maps_link
+                'Yes' if loc.photo else 'No',
+                f"https://maps.google.com/?q={loc.latitude},{loc.longitude}"
             ])
         
         table = Table(data, repeatRows=1)
         table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667eea')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'), ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'), ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('FONTSIZE', (0, 1), (-1, -1), 8),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#ffffff')),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor('#ffffff'), colors.HexColor('#f5f5f5')]),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#dddddd')),
             ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#333333')),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-            ('LEFTPADDING', (0, 0), (-1, -1), 6),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6), ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
         ]))
         
         elements.append(table)
         doc.build(elements)
         buffer.seek(0)
         
-        return Response(
-            buffer.getvalue(),
-            mimetype='application/pdf',
-            headers={'Content-Disposition': f'attachment;filename=location_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'}
-        )
-        
+        return Response(buffer.getvalue(), mimetype='application/pdf',
+                       headers={'Content-Disposition': f'attachment;filename=location_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.pdf'})
     except Exception as e:
-        print(f"❌ PDF export error: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/stats')
 def api_stats():
-    """Get statistics about records"""
     try:
         session = Session()
         total = session.query(Location).count()
         session.close()
-        
-        return jsonify({
-            'total_records': total
-        })
-        
+        return jsonify({'total_records': total})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/delete-location/<int:id>', methods=['DELETE'])
 @login_required
 def delete_location(id):
-    """Delete a location record by ID"""
     try:
         session = Session()
         location = session.query(Location).filter_by(id=id).first()
-        
         if not location:
             session.close()
-            return jsonify({
-                "status": "error", 
-                "message": f"Record with ID {id} not found"
-            }), 404
+            return jsonify({"status": "error", "message": f"Record with ID {id} not found"}), 404
         
         session.delete(location)
         session.commit()
-        
         total = session.query(Location).count()
         session.close()
         
-        print(f"✅ Deleted location ID: {id}")
-        
-        return jsonify({
-            "status": "success",
-            "message": f"Record {id} deleted successfully",
-            "total_records": total
-        })
-        
+        return jsonify({"status": "success", "message": f"Record {id} deleted successfully", "total_records": total})
     except Exception as e:
-        print(f"❌ Delete error: {e}")
-        return jsonify({
-            "status": "error", 
-            "message": str(e)
-        }), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

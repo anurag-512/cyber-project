@@ -173,6 +173,23 @@
             background: #3182ce;
         }
 
+        .photo-link {
+            background: #8b5cf6;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .photo-link:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+
         .delete-btn {
             background: #dc2626;
             color: white;
@@ -333,6 +350,16 @@
             clear: both;
             display: table;
         }
+
+        /* Badge for new records */
+        .badge-new {
+            background: #10b981;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -392,7 +419,9 @@
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    displayLocations(data.locations, page);
+                    // Sort locations by ID in descending order (latest first)
+                    const sortedLocations = data.locations.sort((a, b) => b.id - a.id);
+                    displayLocations(sortedLocations, page);
                     displayPagination(data.total, page, search);
                 })
                 .catch(err => {
@@ -416,6 +445,7 @@
                 <th>Longitude</th>
                 <th>Accuracy (m)</th>
                 <th>Timestamp (IST)</th>
+                <th>Photo</th>
                 <th>Action</th>
             </tr></thead><tbody>`;
 
@@ -424,11 +454,14 @@
             locations.forEach(loc => {
                 html += `<tr>
                     <td>${serialNo++}</td>
-                    <td>${loc.id}</td>
+                    <td>${loc.id}${loc.id > 15 ? ' <span class="badge-new">New</span>' : ''}</td>
                     <td>${loc.latitude}</td>
                     <td>${loc.longitude}</td>
                     <td>${loc.accuracy || 'N/A'}</td>
                     <td>${loc.timestamp}</td>
+                    <td>
+                        ${loc.has_photo ? `<a href="/api/photo/${loc.id}" target="_blank" class="photo-link">📷 View Photo</a>` : '<span style="color: #999; font-size: 12px;">No Photo</span>'}
+                    </td>
                     <td>
                         <a href="https://maps.google.com/?q=${loc.latitude},${loc.longitude}" 
                            target="_blank" class="map-link">🗺️ Map</a>
@@ -437,7 +470,7 @@
                 </tr>`;
             });
 
-            html += `</tbody></table>`;
+            html += `</tbody> licensierad`;
             document.getElementById('tableContent').innerHTML = html;
         }
 
