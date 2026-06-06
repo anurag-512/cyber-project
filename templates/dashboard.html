@@ -170,6 +170,16 @@
             transform: translateY(-2px);
         }
 
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
+
         .table-container {
             background: white;
             border-radius: 15px;
@@ -457,6 +467,7 @@
             <button class="btn btn-success" onclick="exportCSV()">📥 Export to CSV</button>
             <button class="btn btn-pdf" onclick="exportPDF()">📄 Export to PDF</button>
             <button class="btn btn-refresh" onclick="refreshCurrentTab()">🔄 Refresh</button>
+            <button class="btn btn-danger" onclick="confirmDeleteAll()">🗑️ Delete All</button>
         </div>
 
         <div class="table-container">
@@ -523,7 +534,7 @@
 
         function loadInitialLocations() {
             const offset = currentPage * limit;
-            let url = `/api/locations?limit=${limit}&offset=${offset}&type=initial`;
+            let url = `/api/locations?limit=${limit}&offset=${offset}`;
             if (currentSearch) {
                 url += `&search=${encodeURIComponent(currentSearch)}`;
             }
@@ -531,7 +542,7 @@
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    // Filter only initial tracking type locations
+                    // Filter ONLY initial tracking type (not live)
                     const initialLocations = data.locations.filter(loc => loc.tracking_type !== 'live');
                     const sortedLocations = initialLocations.sort((a, b) => b.id - a.id);
                     displayInitialLocations(sortedLocations, currentPage);
@@ -562,7 +573,7 @@
         function displayInitialLocations(locations, page) {
             if (!locations || locations.length === 0) {
                 document.getElementById('tableContent').innerHTML = 
-                    '<div class="loading">📭 No initial records found<br><small>Click "START LIVE TRACKING" on the home page</small></div>';
+                    '<div class="loading">📭 No initial records found</div>';
                 return;
             }
 
@@ -598,14 +609,14 @@
                 </tr>`;
             });
 
-            html += `</tbody> licensierad`;
+            html += `</tbody></tr>`;
             document.getElementById('tableContent').innerHTML = html;
         }
 
         function displayLiveLocations(locations) {
             if (!locations || locations.length === 0) {
                 document.getElementById('tableContent').innerHTML = 
-                    '<div class="loading">📍 No live tracking data yet.<br><small>Start live tracking from the home page.</small></div>';
+                    '<div class="loading">📍 No live tracking data yet.</div>';
                 return;
             }
 
@@ -701,6 +712,55 @@
                 url += `?search=${encodeURIComponent(currentSearch)}`;
             }
             window.open(url, '_blank');
+        }
+
+        function confirmDeleteAll() {
+            const modal = document.createElement('div');
+            modal.className = 'confirm-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>⚠️ Delete All Records</h3>
+                    <p>Are you sure you want to delete <strong>ALL records</strong>?</p>
+                    <p style="color: #dc2626; font-size: 12px;">⚠️ This action cannot be undone!</p>
+                    <div>
+                        <button class="btn-confirm" onclick="deleteAllRecords()">Yes, Delete All</button>
+                        <button class="btn-cancel" onclick="this.closest('.confirm-modal').remove()">Cancel</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function deleteAllRecords() {
+            const modal = document.querySelector('.confirm-modal');
+            if (modal) modal.remove();
+            
+            document.getElementById('tableContent').innerHTML = '<div class="loading"><div class="spinner"></div>Deleting all records...</div>';
+            
+            fetch('/api/delete-all', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (currentTab === 'initial') {
+                        loadInitialLocations();
+                    } else {
+                        loadLiveLocations();
+                    }
+                    loadStats();
+                    showToast('✅ All records deleted successfully!', 'success');
+                } else {
+                    showToast('❌ Error: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Delete all error:', error);
+                showToast('❌ Network error! Please try again.', 'error');
+            });
         }
 
         function confirmDelete(id) {

