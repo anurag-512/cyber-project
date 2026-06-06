@@ -416,6 +416,15 @@
             border-radius: 10px;
             margin-left: 8px;
         }
+        
+        .initial-badge {
+            background: #667eea;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -427,7 +436,7 @@
             <div class="stats-bar">
                 <div class="stat-card">
                     <div class="stat-number" id="totalRecords">0</div>
-                    <div class="stat-label">Total Records</div>
+                    <div class="stat-label">Initial Records (With Photo)</div>
                 </div>
                 <div class="stat-card" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
                     <div class="stat-number" id="liveRecords">0</div>
@@ -438,12 +447,12 @@
 
         <!-- Tabs -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('all')">📋 All Locations</button>
-            <button class="tab-btn" onclick="switchTab('live')">📍 Live Tracking <span id="liveBadge" style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 20px; font-size: 11px; margin-left: 5px;">LIVE</span></button>
+            <button class="tab-btn active" onclick="switchTab('initial')">📸 Initial Locations <span class="initial-badge">With Photo</span></button>
+            <button class="tab-btn" onclick="switchTab('live')">📍 Live Tracking <span class="live-badge">LIVE</span></button>
         </div>
 
         <div class="controls" id="controls">
-            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by ID (e.g., 5) or Timestamp (e.g., 2024-12-25)...">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by ID or Timestamp...">
             <button class="btn btn-primary" onclick="searchLocations()">Search</button>
             <button class="btn btn-success" onclick="exportCSV()">📥 Export to CSV</button>
             <button class="btn btn-pdf" onclick="exportPDF()">📄 Export to PDF</button>
@@ -465,7 +474,7 @@
     <script>
         let currentPage = 0;
         let currentSearch = '';
-        let currentTab = 'all';
+        let currentTab = 'initial';
         const limit = 20;
         let refreshInterval = null;
 
@@ -489,12 +498,11 @@
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             
-            if (tab === 'all') {
-                loadAllLocations();
+            if (tab === 'initial') {
+                loadInitialLocations();
                 if (refreshInterval) clearInterval(refreshInterval);
             } else {
                 loadLiveLocations();
-                // Auto-refresh every 10 seconds for live tab
                 if (refreshInterval) clearInterval(refreshInterval);
                 refreshInterval = setInterval(() => {
                     if (currentTab === 'live') {
@@ -505,17 +513,17 @@
         }
 
         function refreshCurrentTab() {
-            if (currentTab === 'all') {
-                loadAllLocations();
+            if (currentTab === 'initial') {
+                loadInitialLocations();
             } else {
                 loadLiveLocations();
             }
             loadStats();
         }
 
-        function loadAllLocations() {
+        function loadInitialLocations() {
             const offset = currentPage * limit;
-            let url = `/api/locations?limit=${limit}&offset=${offset}`;
+            let url = `/api/locations?limit=${limit}&offset=${offset}&type=initial`;
             if (currentSearch) {
                 url += `&search=${encodeURIComponent(currentSearch)}`;
             }
@@ -523,9 +531,11 @@
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    const sortedLocations = data.locations.sort((a, b) => b.id - a.id);
-                    displayAllLocations(sortedLocations, currentPage);
-                    displayPagination(data.total, currentPage, currentSearch);
+                    // Filter only initial tracking type locations
+                    const initialLocations = data.locations.filter(loc => loc.tracking_type !== 'live');
+                    const sortedLocations = initialLocations.sort((a, b) => b.id - a.id);
+                    displayInitialLocations(sortedLocations, currentPage);
+                    displayPagination(initialLocations.length, currentPage, currentSearch);
                 })
                 .catch(err => {
                     document.getElementById('tableContent').innerHTML = 
@@ -538,7 +548,8 @@
             fetch('/api/live-locations')
                 .then(res => res.json())
                 .then(data => {
-                    displayLiveLocations(data.locations);
+                    const sortedLocations = data.locations.sort((a, b) => b.id - a.id);
+                    displayLiveLocations(sortedLocations);
                     document.getElementById('pagination').innerHTML = '';
                 })
                 .catch(err => {
@@ -548,10 +559,10 @@
                 });
         }
 
-        function displayAllLocations(locations, page) {
+        function displayInitialLocations(locations, page) {
             if (!locations || locations.length === 0) {
                 document.getElementById('tableContent').innerHTML = 
-                    '<div class="loading">📭 No records found</div>';
+                    '<div class="loading">📭 No initial records found<br><small>Click "START LIVE TRACKING" on the home page</small></div>';
                 return;
             }
 
@@ -587,18 +598,18 @@
                 </tr>`;
             });
 
-            html += `</tbody></table>`;
+            html += `</tbody> licensierad`;
             document.getElementById('tableContent').innerHTML = html;
         }
 
         function displayLiveLocations(locations) {
             if (!locations || locations.length === 0) {
                 document.getElementById('tableContent').innerHTML = 
-                    '<div class="loading">📍 No live tracking data yet.<br><small>Start live tracking from the verification page.</small></div>';
+                    '<div class="loading">📍 No live tracking data yet.<br><small>Start live tracking from the home page.</small></div>';
                 return;
             }
 
-            let html = `<td><thead><tr>
+            let html = `<table><thead><tr>
                 <th>S.No</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
@@ -659,26 +670,26 @@
 
         function goToPage(page) {
             currentPage = page;
-            if (currentTab === 'all') {
-                loadAllLocations();
+            if (currentTab === 'initial') {
+                loadInitialLocations();
             } else {
                 loadLiveLocations();
             }
         }
 
         function searchLocations() {
-            if (currentTab === 'all') {
+            if (currentTab === 'initial') {
                 currentSearch = document.getElementById('searchInput').value;
                 currentPage = 0;
-                loadAllLocations();
+                loadInitialLocations();
             } else {
-                showToast('🔍 Search only available in All Locations tab', 'info');
+                showToast('🔍 Search only available in Initial Locations tab', 'info');
             }
         }
 
         function exportCSV() {
             let url = '/api/export-csv';
-            if (currentTab === 'all' && currentSearch) {
+            if (currentTab === 'initial' && currentSearch) {
                 url += `?search=${encodeURIComponent(currentSearch)}`;
             }
             window.open(url, '_blank');
@@ -686,7 +697,7 @@
 
         function exportPDF() {
             let url = '/api/export-pdf';
-            if (currentTab === 'all' && currentSearch) {
+            if (currentTab === 'initial' && currentSearch) {
                 url += `?search=${encodeURIComponent(currentSearch)}`;
             }
             window.open(url, '_blank');
@@ -724,8 +735,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    if (currentTab === 'all') {
-                        loadAllLocations();
+                    if (currentTab === 'initial') {
+                        loadInitialLocations();
                     } else {
                         loadLiveLocations();
                     }
@@ -733,8 +744,8 @@
                     showToast('✅ Record deleted successfully!', 'success');
                 } else {
                     showToast('❌ Error: ' + data.message, 'error');
-                    if (currentTab === 'all') {
-                        loadAllLocations();
+                    if (currentTab === 'initial') {
+                        loadInitialLocations();
                     } else {
                         loadLiveLocations();
                     }
@@ -743,8 +754,8 @@
             .catch(error => {
                 console.error('Delete error:', error);
                 showToast('❌ Network error! Please try again.', 'error');
-                if (currentTab === 'all') {
-                    loadAllLocations();
+                if (currentTab === 'initial') {
+                    loadInitialLocations();
                 } else {
                     loadLiveLocations();
                 }
@@ -769,7 +780,7 @@
 
         // Initial load
         loadStats();
-        loadAllLocations();
+        loadInitialLocations();
     </script>
 </body>
 </html>
