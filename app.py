@@ -51,7 +51,7 @@ class Location(Base):
     longitude = Column(Float, nullable=False)
     accuracy = Column(Float, nullable=True)
     timestamp = Column(DateTime, nullable=False)
-    photo = Column(Text, nullable=True)  # Base64 encoded photo
+    photo = Column(Text, nullable=True)
     photo_filename = Column(String(255), nullable=True)
     
     def to_dict(self):
@@ -64,7 +64,25 @@ class Location(Base):
             'has_photo': self.photo is not None
         }
 
+# Create table with proper check
 Base.metadata.create_all(engine)
+
+# Add photo column if it doesn't exist (for existing databases)
+try:
+    with engine.connect() as conn:
+        # Check if photo column exists
+        result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='locations' AND column_name='photo'"))
+        if not result.fetchone():
+            # Add photo column
+            conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
+            conn.execute(text("ALTER TABLE locations ADD COLUMN photo_filename VARCHAR(255)"))
+            conn.commit()
+            print("✅ Added photo columns to existing table")
+        else:
+            print("✅ Photo columns already exist")
+except Exception as e:
+    print(f"⚠️ Column check skipped (likely SQLite): {e}")
+
 print("✅ Database tables ready")
 
 Session = sessionmaker(bind=engine)
@@ -179,7 +197,8 @@ def api_locations():
         })
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"❌ API Error: {e}")
+        return jsonify({'error': str(e), 'locations': [], 'total': 0}), 500
 
 @app.route('/api/export-csv')
 def export_csv():
@@ -307,7 +326,7 @@ def api_stats():
         session.close()
         return jsonify({'total_records': total})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e), 'total_records': 0}), 500
 
 @app.route('/api/delete-location/<int:id>', methods=['DELETE'])
 @login_required
