@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, Response, session, r
 from datetime import datetime
 import os
 import pytz
-from sqlalchemy import create_engine, Column, Integer, Float, DateTime, Text, String
+from sqlalchemy import create_engine, Column, Integer, Float, DateTime, Text, String, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import csv
@@ -42,7 +42,6 @@ print(f"📊 Database: {DATABASE_URL[:50]}...")
 engine = create_engine(DATABASE_URL, echo=False)
 Base = declarative_base()
 
-# Table Schema with photo column
 class Location(Base):
     __tablename__ = 'locations'
     
@@ -64,24 +63,33 @@ class Location(Base):
             'has_photo': self.photo is not None
         }
 
-# Create table with proper check
+# Create table
 Base.metadata.create_all(engine)
 
-# Add photo column if it doesn't exist (for existing databases)
+# ============ AUTO MIGRATION: Add photo columns if missing ============
 try:
     with engine.connect() as conn:
-        # Check if photo column exists
-        result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='locations' AND column_name='photo'"))
-        if not result.fetchone():
-            # Add photo column
-            conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
-            conn.execute(text("ALTER TABLE locations ADD COLUMN photo_filename VARCHAR(255)"))
-            conn.commit()
-            print("✅ Added photo columns to existing table")
+        if 'postgresql' in DATABASE_URL:
+            # Check if photo column exists in PostgreSQL
+            result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='locations' AND column_name='photo'"))
+            if not result.fetchone():
+                conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
+                conn.execute(text("ALTER TABLE locations ADD COLUMN photo_filename VARCHAR(255)"))
+                conn.commit()
+                print("✅ Added missing photo columns to existing table")
+            else:
+                print("✅ Photo columns already exist")
         else:
-            print("✅ Photo columns already exist")
+            # For SQLite
+            try:
+                conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
+                conn.execute(text("ALTER TABLE locations ADD COLUMN photo_filename VARCHAR(255)"))
+                conn.commit()
+                print("✅ Added photo columns for SQLite")
+            except Exception as e:
+                print(f"Columns might already exist: {e}")
 except Exception as e:
-    print(f"⚠️ Column check skipped (likely SQLite): {e}")
+    print(f"⚠️ Migration check skipped: {e}")
 
 print("✅ Database tables ready")
 
@@ -197,8 +205,7 @@ def api_locations():
         })
         
     except Exception as e:
-        print(f"❌ API Error: {e}")
-        return jsonify({'error': str(e), 'locations': [], 'total': 0}), 500
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/export-csv')
 def export_csv():
