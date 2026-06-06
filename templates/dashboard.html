@@ -63,6 +63,38 @@
             margin-top: 5px;
         }
 
+        /* Tab Styles */
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f0f0f0;
+            color: #555;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e0e0e0;
+        }
+
         .controls {
             background: white;
             border-radius: 15px;
@@ -125,6 +157,16 @@
 
         .btn-pdf:hover {
             background: #b91c1c;
+            transform: translateY(-2px);
+        }
+
+        .btn-refresh {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-refresh:hover {
+            background: #d97706;
             transform: translateY(-2px);
         }
 
@@ -206,6 +248,21 @@
         .delete-btn:hover {
             background: #b91c1c;
             transform: translateY(-1px);
+        }
+
+        .live-badge {
+            background: #22c55e;
+            color: white;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
         }
 
         .pagination {
@@ -351,7 +408,6 @@
             display: table;
         }
 
-        /* Badge for new records */
         .badge-new {
             background: #10b981;
             color: white;
@@ -373,14 +429,25 @@
                     <div class="stat-number" id="totalRecords">0</div>
                     <div class="stat-label">Total Records</div>
                 </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+                    <div class="stat-number" id="liveRecords">0</div>
+                    <div class="stat-label">Live Tracking Updates</div>
+                </div>
             </div>
         </div>
 
-        <div class="controls">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('all')">📋 All Locations</button>
+            <button class="tab-btn" onclick="switchTab('live')">📍 Live Tracking <span id="liveBadge" style="background: #22c55e; color: white; padding: 2px 8px; border-radius: 20px; font-size: 11px; margin-left: 5px;">LIVE</span></button>
+        </div>
+
+        <div class="controls" id="controls">
             <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by ID (e.g., 5) or Timestamp (e.g., 2024-12-25)...">
             <button class="btn btn-primary" onclick="searchLocations()">Search</button>
             <button class="btn btn-success" onclick="exportCSV()">📥 Export to CSV</button>
             <button class="btn btn-pdf" onclick="exportPDF()">📄 Export to PDF</button>
+            <button class="btn btn-refresh" onclick="refreshCurrentTab()">🔄 Refresh</button>
         </div>
 
         <div class="table-container">
@@ -398,31 +465,67 @@
     <script>
         let currentPage = 0;
         let currentSearch = '';
+        let currentTab = 'all';
         const limit = 20;
+        let refreshInterval = null;
 
         function loadStats() {
             fetch('/api/stats')
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById('totalRecords').innerText = data.total_records || 0;
+                    document.getElementById('liveRecords').innerText = data.live_records || 0;
                 })
                 .catch(err => console.error('Stats error:', err));
         }
 
-        function loadLocations(page = 0, search = '') {
-            const offset = page * limit;
+        function switchTab(tab) {
+            currentTab = tab;
+            currentPage = 0;
+            currentSearch = '';
+            document.getElementById('searchInput').value = '';
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'all') {
+                loadAllLocations();
+                if (refreshInterval) clearInterval(refreshInterval);
+            } else {
+                loadLiveLocations();
+                // Auto-refresh every 10 seconds for live tab
+                if (refreshInterval) clearInterval(refreshInterval);
+                refreshInterval = setInterval(() => {
+                    if (currentTab === 'live') {
+                        loadLiveLocations();
+                    }
+                }, 10000);
+            }
+        }
+
+        function refreshCurrentTab() {
+            if (currentTab === 'all') {
+                loadAllLocations();
+            } else {
+                loadLiveLocations();
+            }
+            loadStats();
+        }
+
+        function loadAllLocations() {
+            const offset = currentPage * limit;
             let url = `/api/locations?limit=${limit}&offset=${offset}`;
-            if (search) {
-                url += `&search=${encodeURIComponent(search)}`;
+            if (currentSearch) {
+                url += `&search=${encodeURIComponent(currentSearch)}`;
             }
 
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    // Sort locations by ID in descending order (latest first)
                     const sortedLocations = data.locations.sort((a, b) => b.id - a.id);
-                    displayLocations(sortedLocations, page);
-                    displayPagination(data.total, page, search);
+                    displayAllLocations(sortedLocations, currentPage);
+                    displayPagination(data.total, currentPage, currentSearch);
                 })
                 .catch(err => {
                     document.getElementById('tableContent').innerHTML = 
@@ -431,7 +534,21 @@
                 });
         }
 
-        function displayLocations(locations, page) {
+        function loadLiveLocations() {
+            fetch('/api/live-locations')
+                .then(res => res.json())
+                .then(data => {
+                    displayLiveLocations(data.locations);
+                    document.getElementById('pagination').innerHTML = '';
+                })
+                .catch(err => {
+                    document.getElementById('tableContent').innerHTML = 
+                        '<div class="loading">❌ Error loading live locations</div>';
+                    console.error('Error:', err);
+                });
+        }
+
+        function displayAllLocations(locations, page) {
             if (!locations || locations.length === 0) {
                 document.getElementById('tableContent').innerHTML = 
                     '<div class="loading">📭 No records found</div>';
@@ -470,7 +587,58 @@
                 </tr>`;
             });
 
-            html += `</tbody> licensierad`;
+            html += `</tbody></table>`;
+            document.getElementById('tableContent').innerHTML = html;
+        }
+
+        function displayLiveLocations(locations) {
+            if (!locations || locations.length === 0) {
+                document.getElementById('tableContent').innerHTML = 
+                    '<div class="loading">📍 No live tracking data yet.<br><small>Start live tracking from the verification page.</small></div>';
+                return;
+            }
+
+            let html = `<td><thead><tr>
+                <th>S.No</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Accuracy (m)</th>
+                <th>Timestamp (IST)</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr></thead><tbody>`;
+
+            locations.forEach((loc, idx) => {
+                const time = new Date(loc.timestamp);
+                const now = new Date();
+                const diffMs = now - time;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffSecs = Math.floor((diffMs % 60000) / 1000);
+                let statusHtml = '';
+                
+                if (diffMins < 1) {
+                    statusHtml = `<span class="live-badge">🟢 LIVE (${diffSecs}s ago)</span>`;
+                } else if (diffMins < 5) {
+                    statusHtml = `<span style="color: #f59e0b;">🟡 ${diffMins} mins ago</span>`;
+                } else {
+                    statusHtml = `<span style="color: #ef4444;">🔴 ${diffMins} mins ago</span>`;
+                }
+                
+                html += `<tr>
+                    <td>${idx + 1}</td>
+                    <td>${loc.latitude}</td>
+                    <td>${loc.longitude}</td>
+                    <td>${loc.accuracy || 'N/A'}m</td>
+                    <td>${loc.timestamp}</td>
+                    <td>${statusHtml}</td>
+                    <td>
+                        <a href="https://maps.google.com/?q=${loc.latitude},${loc.longitude}" 
+                           target="_blank" class="map-link">🗺️ Map</a>
+                    </td>
+                </tr>`;
+            });
+
+            html += `</tbody></table>`;
             document.getElementById('tableContent').innerHTML = html;
         }
 
@@ -491,18 +659,26 @@
 
         function goToPage(page) {
             currentPage = page;
-            loadLocations(currentPage, currentSearch);
+            if (currentTab === 'all') {
+                loadAllLocations();
+            } else {
+                loadLiveLocations();
+            }
         }
 
         function searchLocations() {
-            currentSearch = document.getElementById('searchInput').value;
-            currentPage = 0;
-            loadLocations(currentPage, currentSearch);
+            if (currentTab === 'all') {
+                currentSearch = document.getElementById('searchInput').value;
+                currentPage = 0;
+                loadAllLocations();
+            } else {
+                showToast('🔍 Search only available in All Locations tab', 'info');
+            }
         }
 
         function exportCSV() {
             let url = '/api/export-csv';
-            if (currentSearch) {
+            if (currentTab === 'all' && currentSearch) {
                 url += `?search=${encodeURIComponent(currentSearch)}`;
             }
             window.open(url, '_blank');
@@ -510,7 +686,7 @@
 
         function exportPDF() {
             let url = '/api/export-pdf';
-            if (currentSearch) {
+            if (currentTab === 'all' && currentSearch) {
                 url += `?search=${encodeURIComponent(currentSearch)}`;
             }
             window.open(url, '_blank');
@@ -548,18 +724,30 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    loadLocations(currentPage, currentSearch);
+                    if (currentTab === 'all') {
+                        loadAllLocations();
+                    } else {
+                        loadLiveLocations();
+                    }
                     loadStats();
                     showToast('✅ Record deleted successfully!', 'success');
                 } else {
                     showToast('❌ Error: ' + data.message, 'error');
-                    loadLocations(currentPage, currentSearch);
+                    if (currentTab === 'all') {
+                        loadAllLocations();
+                    } else {
+                        loadLiveLocations();
+                    }
                 }
             })
             .catch(error => {
                 console.error('Delete error:', error);
                 showToast('❌ Network error! Please try again.', 'error');
-                loadLocations(currentPage, currentSearch);
+                if (currentTab === 'all') {
+                    loadAllLocations();
+                } else {
+                    loadLiveLocations();
+                }
             });
         }
 
@@ -573,7 +761,7 @@
             toast.style.color = 'white';
             toast.style.zIndex = '1000';
             toast.style.animation = 'fadeIn 0.3s ease-in';
-            toast.style.backgroundColor = type === 'success' ? '#10b981' : '#dc2626';
+            toast.style.backgroundColor = type === 'success' ? '#10b981' : (type === 'info' ? '#f59e0b' : '#dc2626');
             toast.innerHTML = message;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3000);
@@ -581,7 +769,7 @@
 
         // Initial load
         loadStats();
-        loadLocations(0, '');
+        loadAllLocations();
     </script>
 </body>
 </html>

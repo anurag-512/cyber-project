@@ -52,6 +52,7 @@ class Location(Base):
     timestamp = Column(DateTime, nullable=False)
     photo = Column(Text, nullable=True)
     photo_filename = Column(String(255), nullable=True)
+    tracking_type = Column(String(50), default='initial')  # 'initial' or 'live'
     
     def to_dict(self):
         return {
@@ -60,32 +61,43 @@ class Location(Base):
             'longitude': self.longitude,
             'accuracy': self.accuracy,
             'timestamp': self.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
-            'has_photo': self.photo is not None
+            'has_photo': self.photo is not None,
+            'tracking_type': self.tracking_type
         }
 
 # Create table
 Base.metadata.create_all(engine)
 
-# ============ AUTO MIGRATION: Add photo columns if missing ============
+# ============ AUTO MIGRATION: Add missing columns ============
 try:
     with engine.connect() as conn:
         if 'postgresql' in DATABASE_URL:
-            # Check if photo column exists in PostgreSQL
+            # Check and add photo column
             result = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='locations' AND column_name='photo'"))
             if not result.fetchone():
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo_filename VARCHAR(255)"))
                 conn.commit()
-                print("✅ Added missing photo columns to existing table")
+                print("✅ Added photo columns")
             else:
                 print("✅ Photo columns already exist")
+            
+            # Check and add tracking_type column
+            result2 = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='locations' AND column_name='tracking_type'"))
+            if not result2.fetchone():
+                conn.execute(text("ALTER TABLE locations ADD COLUMN tracking_type VARCHAR(50) DEFAULT 'initial'"))
+                conn.commit()
+                print("✅ Added tracking_type column")
+            else:
+                print("✅ tracking_type column already exists")
         else:
             # For SQLite
             try:
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo_filename VARCHAR(255)"))
+                conn.execute(text("ALTER TABLE locations ADD COLUMN tracking_type VARCHAR(50) DEFAULT 'initial'"))
                 conn.commit()
-                print("✅ Added photo columns for SQLite")
+                print("✅ Added columns for SQLite")
             except Exception as e:
                 print(f"Columns might already exist: {e}")
 except Exception as e:
@@ -113,7 +125,8 @@ def save_location():
             accuracy=data.get("accuracy"),
             timestamp=ist_now,
             photo=data.get("photo"),
-            photo_filename=data.get("photo_filename")
+            photo_filename=data.get("photo_filename"),
+            tracking_type=data.get("tracking_type", "initial")
         )
         
         session = Session()
@@ -122,11 +135,11 @@ def save_location():
         record_count = session.query(Location).count()
         session.close()
         
-        print(f"✅ Location + Photo saved: {data.get('latitude')}, {data.get('longitude')}")
+        print(f"✅ Location saved: {data.get('latitude')}, {data.get('longitude')} - Type: {data.get('tracking_type', 'initial')}")
         
         return jsonify({
             "status": "success",
-            "message": "Location and photo saved successfully",
+            "message": "Location saved successfully",
             "total_records": record_count
         })
         
@@ -207,6 +220,24 @@ def api_locations():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/live-locations')
+@login_required
+def get_live_locations():
+    """Get only live tracking locations"""
+    try:
+        session = Session()
+        locations = session.query(Location).filter(
+            Location.tracking_type == 'live'
+        ).order_by(Location.timestamp.desc()).limit(100).all()
+        session.close()
+        
+        return jsonify({
+            'locations': [loc.to_dict() for loc in locations],
+            'total': len(locations)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'locations': []}), 500
+
 @app.route('/api/export-csv')
 def export_csv():
     try:
@@ -230,7 +261,7 @@ def export_csv():
         output = io.StringIO()
         writer = csv.writer(output)
         
-        writer.writerow(['ID', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Has Photo', 'Google Maps Link'])
+        writer.writerow(['ID', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Tracking Type', 'Has Photo', 'Google Maps Link'])
         
         for loc in locations:
             maps_link = f"https://maps.google.com/?q={loc.latitude},{loc.longitude}"
@@ -240,6 +271,7 @@ def export_csv():
                 loc.longitude,
                 loc.accuracy if loc.accuracy else 'N/A',
                 loc.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+                loc.tracking_type or 'initial',
                 'Yes' if loc.photo else 'No',
                 maps_link
             ])
@@ -292,13 +324,14 @@ def export_pdf():
         elements.append(Paragraph(f"Generated on: {current_time} IST", styles['Normal']))
         elements.append(Spacer(1, 20))
         
-        data = [['S.No', 'ID', 'Latitude', 'Longitude', 'Accuracy', 'Timestamp', 'Photo', 'Google Maps']]
+        data = [['S.No', 'ID', 'Latitude', 'Longitude', 'Accuracy', 'Timestamp', 'Type', 'Photo', 'Google Maps']]
         
         for idx, loc in enumerate(locations, 1):
             data.append([
                 str(idx), str(loc.id), str(loc.latitude), str(loc.longitude),
                 str(loc.accuracy if loc.accuracy else 'N/A'),
                 loc.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+                loc.tracking_type or 'initial',
                 'Yes' if loc.photo else 'No',
                 f"https://maps.google.com/?q={loc.latitude},{loc.longitude}"
             ])
@@ -330,10 +363,11 @@ def api_stats():
     try:
         session = Session()
         total = session.query(Location).count()
+        live_total = session.query(Location).filter(Location.tracking_type == 'live').count()
         session.close()
-        return jsonify({'total_records': total})
+        return jsonify({'total_records': total, 'live_records': live_total})
     except Exception as e:
-        return jsonify({'error': str(e), 'total_records': 0}), 500
+        return jsonify({'error': str(e), 'total_records': 0, 'live_records': 0}), 500
 
 @app.route('/api/delete-location/<int:id>', methods=['DELETE'])
 @login_required

