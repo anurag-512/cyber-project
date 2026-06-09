@@ -11,9 +11,9 @@
     --bg: #0a0d14;
     --surface: #111520;
     --card: #161c2d;
-    --border: rgba(220, 38, 38, 0.25);
-    --accent: #ef4444;
-    --accent2: #7b5ea7;
+    --border: rgba(66, 153, 225, 0.25);
+    --accent: #2b70e8;
+    --accent-light: #4b8ef2;
     --text: #e8edf5;
     --muted: #6b7a99;
     --sheet: #111827;
@@ -21,7 +21,7 @@
 
   body {
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--bg);
+    background: #0a0d14;
     min-height: 100vh;
     overflow: hidden;
   }
@@ -31,8 +31,8 @@
     position: fixed;
     inset: 0;
     background-image:
-      linear-gradient(rgba(220,38,38,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(220,38,38,0.04) 1px, transparent 1px);
+      linear-gradient(rgba(43,112,232,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(43,112,232,0.04) 1px, transparent 1px);
     background-size: 40px 40px;
     z-index: 0;
   }
@@ -43,8 +43,8 @@
     filter: blur(80px);
     pointer-events: none;
   }
-  .orb1 { width: 300px; height: 300px; background: rgba(220,38,38,0.08); top: -80px; left: -80px; z-index: 0; }
-  .orb2 { width: 200px; height: 200px; background: rgba(123,94,167,0.1); bottom: 30%; right: -40px; z-index: 0; }
+  .orb1 { width: 300px; height: 300px; background: rgba(43,112,232,0.08); top: -80px; left: -80px; z-index: 0; }
+  .orb2 { width: 200px; height: 200px; background: rgba(43,112,232,0.06); bottom: 30%; right: -40px; z-index: 0; }
 
   /* ── Topbar ── */
   .topbar {
@@ -57,7 +57,7 @@
     padding: 14px 20px;
     background: rgba(10,13,20,0.85);
     backdrop-filter: blur(16px);
-    border-bottom: 0.5px solid rgba(220,38,38,0.2);
+    border-bottom: 0.5px solid rgba(43,112,232,0.2);
   }
 
   .topbar-brand {
@@ -68,7 +68,7 @@
 
   .tg-icon {
     width: 32px; height: 32px;
-    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    background: linear-gradient(135deg, #2b70e8 0%, #1a4fc4 100%);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -88,19 +88,19 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    background: rgba(220,38,38,0.12);
-    border: 0.5px solid rgba(220,38,38,0.3);
+    background: rgba(43,112,232,0.15);
+    border: 0.5px solid rgba(43,112,232,0.3);
     border-radius: 20px;
     padding: 4px 10px;
     font-size: 11px;
-    color: #ef4444;
+    color: #4b8ef2;
     font-weight: 600;
     letter-spacing: 0.5px;
   }
 
   .live-dot {
     width: 6px; height: 6px;
-    background: #ef4444;
+    background: #4b8ef2;
     border-radius: 50%;
     animation: pulse 1.5s ease-in-out infinite;
   }
@@ -146,7 +146,7 @@
 
   .msg-bubble {
     background: var(--card);
-    border: 0.5px solid rgba(220,38,38,0.15);
+    border: 0.5px solid rgba(43,112,232,0.15);
     border-radius: 4px 14px 14px 14px;
     padding: 8px 12px;
     max-width: 80%;
@@ -156,19 +156,19 @@
     font-size: 11px;
     font-weight: 600;
     margin-bottom: 3px;
-    color: #ef4444;
+    color: #4b8ef2;
   }
 
   .msg-text { font-size: 13px; color: var(--muted); line-height: 1.4; }
 
   .code-block {
-    background: rgba(220,38,38,0.08);
-    border: 0.5px solid rgba(220,38,38,0.2);
+    background: rgba(43,112,232,0.08);
+    border: 0.5px solid rgba(43,112,232,0.2);
     border-radius: 6px;
     padding: 6px 10px;
     font-family: 'SF Mono', Consolas, monospace;
     font-size: 11px;
-    color: #fca5a5;
+    color: #8ab4f8;
     margin-top: 5px;
   }
 
@@ -185,7 +185,7 @@
     width: 100%;
     background: var(--sheet);
     border-radius: 24px 24px 0 0;
-    border-top: 0.5px solid rgba(220,38,38,0.2);
+    border-top: 0.5px solid rgba(43,112,232,0.25);
     animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     overflow: hidden;
   }
@@ -216,8 +216,8 @@
 
   .ch-logo {
     width: 60px; height: 60px;
-    background: linear-gradient(145deg, #1a0a0a 0%, #0a0808 100%);
-    border: 1.5px solid rgba(220,38,38,0.4);
+    background: linear-gradient(145deg, #1a4fc4 0%, #0d3a8a 100%);
+    border: 1.5px solid rgba(43,112,232,0.5);
     border-radius: 18px;
     display: flex;
     align-items: center;
@@ -226,13 +226,13 @@
     position: relative;
   }
 
-  .ch-logo svg { width: 28px; height: 28px; }
+  .ch-logo svg { width: 32px; height: 32px; }
 
   .ch-logo-glow {
     position: absolute;
     inset: -2px;
     border-radius: 20px;
-    background: radial-gradient(ellipse, rgba(220,38,38,0.2) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(43,112,232,0.3) 0%, transparent 70%);
   }
 
   .ch-info { flex: 1; }
@@ -243,19 +243,33 @@
     color: var(--text);
     letter-spacing: -0.3px;
     line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
+
+  .ch-name-tg-logo {
+    width: 20px; height: 20px;
+    background: #2b70e8;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ch-name-tg-logo svg { width: 12px; height: 12px; fill: white; }
 
   .ch-tag {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    background: rgba(220,38,38,0.08);
-    border: 0.5px solid rgba(220,38,38,0.2);
+    background: rgba(43,112,232,0.12);
+    border: 0.5px solid rgba(43,112,232,0.25);
     border-radius: 12px;
     padding: 3px 8px;
     margin-top: 5px;
     font-size: 11px;
-    color: #ef4444;
+    color: #4b8ef2;
     font-weight: 500;
   }
 
@@ -268,8 +282,8 @@
   }
 
   .stat-card {
-    background: rgba(255,255,255,0.03);
-    border: 0.5px solid rgba(220,38,38,0.15);
+    background: rgba(43,112,232,0.05);
+    border: 0.5px solid rgba(43,112,232,0.2);
     border-radius: 14px;
     padding: 12px 8px;
     text-align: center;
@@ -306,12 +320,12 @@
   }
 
   .chip {
-    background: rgba(220,38,38,0.08);
-    border: 0.5px solid rgba(220,38,38,0.2);
+    background: rgba(43,112,232,0.12);
+    border: 0.5px solid rgba(43,112,232,0.25);
     border-radius: 20px;
     padding: 5px 12px;
     font-size: 12px;
-    color: #fca5a5;
+    color: #8ab4f8;
     font-weight: 500;
   }
 
@@ -319,7 +333,7 @@
   .join-btn {
     width: 100%;
     padding: 15px;
-    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    background: linear-gradient(135deg, #2b70e8 0%, #1a4fc4 100%);
     color: white;
     border: none;
     border-radius: 14px;
@@ -358,7 +372,7 @@
     left: 50%;
     transform: translateX(-50%) translateY(-10px);
     background: var(--card);
-    border: 0.5px solid rgba(220,38,38,0.3);
+    border: 0.5px solid rgba(43,112,232,0.3);
     color: var(--text);
     padding: 10px 18px;
     border-radius: 24px;
@@ -400,8 +414,8 @@
     position: absolute;
     inset: 0;
     background-image:
-      linear-gradient(rgba(220,38,38,0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(220,38,38,0.05) 1px, transparent 1px);
+      linear-gradient(rgba(43,112,232,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(43,112,232,0.05) 1px, transparent 1px);
     background-size: 32px 32px;
   }
 
@@ -409,7 +423,7 @@
     position: absolute;
     border-radius: 50%;
     filter: blur(60px);
-    background: rgba(220,38,38,0.12);
+    background: rgba(43,112,232,0.12);
     width: 250px; height: 250px;
     top: 20%; left: -60px;
   }
@@ -418,7 +432,7 @@
     position: absolute;
     border-radius: 50%;
     filter: blur(70px);
-    background: rgba(123,94,167,0.15);
+    background: rgba(43,112,232,0.08);
     width: 200px; height: 200px;
     bottom: 30%; right: -40px;
   }
@@ -429,7 +443,7 @@
     width: 100%;
     background: var(--sheet);
     border-radius: 24px 24px 0 0;
-    border-top: 0.5px solid rgba(220,38,38,0.2);
+    border-top: 0.5px solid rgba(43,112,232,0.25);
     padding: 12px 20px 40px;
     animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
@@ -437,15 +451,15 @@
   .success-icon-wrap {
     width: 72px; height: 72px;
     border-radius: 22px;
-    background: linear-gradient(145deg, rgba(220,38,38,0.15), rgba(220,38,38,0.05));
-    border: 1px solid rgba(220,38,38,0.3);
+    background: linear-gradient(145deg, rgba(43,112,232,0.15), rgba(43,112,232,0.05));
+    border: 1px solid rgba(43,112,232,0.35);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 24px auto 16px;
   }
 
-  .success-icon-wrap svg { width: 36px; height: 36px; stroke: #ef4444; fill: none; stroke-width: 2; }
+  .success-icon-wrap svg { width: 36px; height: 36px; stroke: #4b8ef2; fill: none; stroke-width: 2; }
 
   .success-title {
     font-size: 22px;
@@ -464,12 +478,12 @@
     line-height: 1.5;
   }
 
-  .success-sub span { color: #ef4444; font-weight: 600; }
+  .success-sub span { color: #4b8ef2; font-weight: 600; }
 
   .success-ok-btn {
     width: 100%;
     padding: 15px;
-    background: linear-gradient(135deg, #dc2626, #991b1b);
+    background: linear-gradient(135deg, #2b70e8, #1a4fc4);
     color: white;
     border: none;
     border-radius: 14px;
@@ -510,7 +524,7 @@
 <div class="bg-content">
   <div class="msg-list">
     <div class="msg">
-      <div class="msg-avatar" style="background:#dc2626;">LM</div>
+      <div class="msg-avatar" style="background:#2b70e8;">LM</div>
       <div class="msg-bubble">
         <div class="msg-sender">Latest Malware Team</div>
         <div class="msg-text">⚠️ New ransomware variant detected in wild — Triple extortion tactics observed</div>
@@ -518,8 +532,8 @@
       </div>
     </div>
     <div class="msg" style="justify-content:flex-end;">
-      <div class="msg-bubble" style="border-radius:14px 4px 14px 14px; background:rgba(220,38,38,0.12); border-color:rgba(220,38,38,0.2);">
-        <div class="msg-text" style="color:#fca5a5;">IoCs published — block domains: malicios.c2, update.proc</div>
+      <div class="msg-bubble" style="border-radius:14px 4px 14px 14px; background:rgba(43,112,232,0.12); border-color:rgba(43,112,232,0.2);">
+        <div class="msg-text" style="color:#8ab4f8;">IoCs published — block domains: malicios.c2, update.proc</div>
       </div>
     </div>
     <div class="msg">
@@ -538,7 +552,7 @@
       </div>
     </div>
     <div class="msg">
-      <div class="msg-avatar" style="background:#dc2626;">LM</div>
+      <div class="msg-avatar" style="background:#2b70e8;">LM</div>
       <div class="msg-bubble">
         <div class="msg-sender">Latest Malware Team</div>
         <div class="msg-text">YARA rules for new Mirai variant — IoT devices targeted</div>
@@ -558,13 +572,18 @@
         <div class="ch-logo">
           <div class="ch-logo-glow"></div>
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#ef4444" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M2 17l10 5 10-5" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 12l10 5 10-5" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#2b70e8" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M2 17l10 5 10-5" stroke="#2b70e8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 12l10 5 10-5" stroke="#2b70e8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
           </svg>
         </div>
         <div class="ch-info">
-          <div class="ch-name">Latest Malware</div>
+          <div class="ch-name">
+            <span>Latest Malware</span>
+            <div class="ch-name-tg-logo">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.572 3.021L1.39 10.421c-1.234.477-1.226 1.14-.226 1.437l4.898 1.528 11.34-7.154c.534-.325 1.023-.15.621.207L7.86 16.05l-.347 5.017c.508 0 .732-.233 1.012-.504l2.43-2.36 5.054 3.733c.932.513 1.602.249 1.834-.864L21.95 4.445c.327-1.31-.499-1.905-1.378-.424z"/></svg>
+            </div>
+          </div>
           <div class="ch-tag">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             Malware Research &nbsp;·&nbsp; Private
@@ -579,7 +598,7 @@
           <span class="stat-label">Members</span>
         </div>
         <div class="stat-card">
-          <span class="stat-icon" style="color:#ef4444;">⚡</span>
+          <span class="stat-icon" style="color:#4b8ef2;">⚡</span>
           <span class="stat-value">3.1K</span>
           <span class="stat-label">Online</span>
         </div>
