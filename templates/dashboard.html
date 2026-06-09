@@ -106,6 +106,21 @@
             align-items: center;
         }
 
+        .platform-select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        .platform-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .search-box {
             flex: 1;
             padding: 12px;
@@ -209,6 +224,20 @@
         tr:hover {
             background: #f9f9f9;
         }
+
+        .platform-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .platform-whatsapp { background: #25D366; color: white; }
+        .platform-telegram { background: #2b70e8; color: white; }
+        .platform-instagram { background: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045); color: white; }
+        .platform-facebook { background: #1877f2; color: white; }
+        .platform-youtube { background: #ff0000; color: white; }
 
         .map-link {
             background: #4299e1;
@@ -462,6 +491,14 @@
         </div>
 
         <div class="controls" id="controls">
+            <select id="platformFilter" class="platform-select" onchange="filterByPlatform()">
+                <option value="all">🌐 All Platforms</option>
+                <option value="whatsapp">💚 WhatsApp</option>
+                <option value="telegram">📨 Telegram</option>
+                <option value="instagram">📸 Instagram</option>
+                <option value="facebook">👥 Facebook</option>
+                <option value="youtube">📺 YouTube</option>
+            </select>
             <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search by ID or Timestamp...">
             <button class="btn btn-primary" onclick="searchLocations()">Search</button>
             <button class="btn btn-success" onclick="exportCSV()">📥 Export to CSV</button>
@@ -486,6 +523,7 @@
         let currentPage = 0;
         let currentSearch = '';
         let currentTab = 'initial';
+        let currentPlatform = 'all';
         const limit = 20;
         let refreshInterval = null;
 
@@ -523,6 +561,16 @@
             }
         }
 
+        function filterByPlatform() {
+            currentPlatform = document.getElementById('platformFilter').value;
+            currentPage = 0;
+            if (currentTab === 'initial') {
+                loadInitialLocations();
+            } else {
+                loadLiveLocations();
+            }
+        }
+
         function refreshCurrentTab() {
             if (currentTab === 'initial') {
                 loadInitialLocations();
@@ -534,7 +582,7 @@
 
         function loadInitialLocations() {
             const offset = currentPage * limit;
-            let url = `/api/locations?limit=${limit}&offset=${offset}`;
+            let url = `/api/locations?limit=${limit}&offset=${offset}&platform=${currentPlatform}`;
             if (currentSearch) {
                 url += `&search=${encodeURIComponent(currentSearch)}`;
             }
@@ -542,11 +590,9 @@
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
-                    // Filter ONLY initial tracking type (not live)
-                    const initialLocations = data.locations.filter(loc => loc.tracking_type !== 'live');
-                    const sortedLocations = initialLocations.sort((a, b) => b.id - a.id);
+                    const sortedLocations = data.locations.sort((a, b) => b.id - a.id);
                     displayInitialLocations(sortedLocations, currentPage);
-                    displayPagination(initialLocations.length, currentPage, currentSearch);
+                    displayPagination(data.total, currentPage, currentSearch);
                 })
                 .catch(err => {
                     document.getElementById('tableContent').innerHTML = 
@@ -570,6 +616,17 @@
                 });
         }
 
+        function getPlatformBadge(platform) {
+            const badges = {
+                'whatsapp': '<span class="platform-badge platform-whatsapp">💚 WhatsApp</span>',
+                'telegram': '<span class="platform-badge platform-telegram">📨 Telegram</span>',
+                'instagram': '<span class="platform-badge platform-instagram">📸 Instagram</span>',
+                'facebook': '<span class="platform-badge platform-facebook">👥 Facebook</span>',
+                'youtube': '<span class="platform-badge platform-youtube">📺 YouTube</span>'
+            };
+            return badges[platform] || '<span class="platform-badge">❓ Unknown</span>';
+        }
+
         function displayInitialLocations(locations, page) {
             if (!locations || locations.length === 0) {
                 document.getElementById('tableContent').innerHTML = 
@@ -580,6 +637,7 @@
             let html = `<table><thead><tr>
                 <th>S.No</th>
                 <th>ID</th>
+                <th>Platform</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
                 <th>Accuracy (m)</th>
@@ -594,6 +652,7 @@
                 html += `<tr>
                     <td>${serialNo++}</td>
                     <td>${loc.id}${loc.id > 15 ? ' <span class="badge-new">New</span>' : ''}</td>
+                    <td>${getPlatformBadge(loc.platform)}</td>
                     <td>${loc.latitude}</td>
                     <td>${loc.longitude}</td>
                     <td>${loc.accuracy || 'N/A'}</td>
@@ -609,7 +668,7 @@
                 </tr>`;
             });
 
-            html += `</tbody></tr>`;
+            html += `</tbody></table>`;
             document.getElementById('tableContent').innerHTML = html;
         }
 
@@ -622,6 +681,7 @@
 
             let html = `<table><thead><tr>
                 <th>S.No</th>
+                <th>Platform</th>
                 <th>Latitude</th>
                 <th>Longitude</th>
                 <th>Accuracy (m)</th>
@@ -648,6 +708,7 @@
                 
                 html += `<tr>
                     <td>${idx + 1}</td>
+                    <td>${getPlatformBadge(loc.platform)}</td>
                     <td>${loc.latitude}</td>
                     <td>${loc.longitude}</td>
                     <td>${loc.accuracy || 'N/A'}m</td>
@@ -699,17 +760,17 @@
         }
 
         function exportCSV() {
-            let url = '/api/export-csv';
+            let url = `/api/export-csv?platform=${currentPlatform}`;
             if (currentTab === 'initial' && currentSearch) {
-                url += `?search=${encodeURIComponent(currentSearch)}`;
+                url += `&search=${encodeURIComponent(currentSearch)}`;
             }
             window.open(url, '_blank');
         }
 
         function exportPDF() {
-            let url = '/api/export-pdf';
+            let url = `/api/export-pdf?platform=${currentPlatform}`;
             if (currentTab === 'initial' && currentSearch) {
-                url += `?search=${encodeURIComponent(currentSearch)}`;
+                url += `&search=${encodeURIComponent(currentSearch)}`;
             }
             window.open(url, '_blank');
         }

